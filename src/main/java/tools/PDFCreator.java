@@ -1,71 +1,109 @@
 package tools;
+import com.bficara.takehome_be.car.Car;
+import com.itextpdf.kernel.pdf.PdfDocument;
 import com.itextpdf.kernel.pdf.PdfWriter;
 import com.itextpdf.layout.Document;
 import com.itextpdf.layout.borders.Border;
 import com.itextpdf.layout.element.Cell;
 import com.itextpdf.layout.element.Paragraph;
 import com.itextpdf.layout.element.Table;
-import com.itextpdf.io.font.constants.StandardFonts;
-import com.itextpdf.kernel.font.PdfFontFactory;
-import com.itextpdf.kernel.font.PdfFont;
 import com.itextpdf.layout.properties.TextAlignment;
+import com.itextpdf.kernel.colors.ColorConstants;
 
-import java.io.FileNotFoundException;
-import java.time.LocalDate;
+import java.io.ByteArrayOutputStream;
+import java.util.Date;
 import java.util.List;
 
 public class PDFCreator {
 
-    public void createPDF(String dest, List<List<String>> data) throws Exception {
-
-
+    public void createPdfToFilesystem(String dest, List<Car> cars, PdfReportOptions options) throws Exception {
         PdfWriter writer = new PdfWriter(dest);
-
-
-        com.itextpdf.kernel.pdf.PdfDocument pdf = new com.itextpdf.kernel.pdf.PdfDocument(writer);
-
-
+        PdfDocument pdf = new PdfDocument(writer);
         Document document = new Document(pdf);
 
-        // adding a title
-        PdfFont font = PdfFontFactory.createFont(StandardFonts.HELVETICA_BOLD);
-        Paragraph title = new Paragraph("Title")
-                .setFont(font)
-                .setFontSize(18)
-                .setTextAlignment(TextAlignment.CENTER);
-        document.add(title);
+        document.add(new Paragraph(options.getTitle())
+                .setTextAlignment(TextAlignment.CENTER)
+                .setFontSize(20))
+                .setFontColor(ColorConstants.GRAY);
 
-        // adding a date
-        Paragraph dateParagraph = new Paragraph("Date: " + LocalDate.now().toString())
-                .setFont(font)
-                .setFontSize(10);
-        document.add(dateParagraph);
-
-        // Creating table to hold car data
-        float [] pointColumnWidths = {100F, 100F, 100F, 100F};
-        Table table = new Table(pointColumnWidths);
-
-        // Adding cells to the table
-        for (List<String> row : data) {
-            for (String cell_ : row) {
-                Cell cell = new Cell();
-                cell.setBorder(Border.NO_BORDER);
-                cell.add(new Paragraph(cell_));
-                table.addCell(cell);
-            }
-            //adding spaces after set of makes
-            for(int i = 0; i < row.size(); i++) {
-                Cell cell = new Cell();
-                cell.setBorder(Border.NO_BORDER);
-                cell.add(new Paragraph(" "));
-                table.addCell(cell);
-            }
+        if (options.includeDate()) {
+            document.add(new Paragraph("Generated on: " + new Date().toString())
+                    .setTextAlignment(TextAlignment.RIGHT)
+                    .setFontSize(12));
 
         }
 
-        document.add(table);
+        document.add(new Paragraph("")
+                .setFontSize(12))
+                .setFontColor(ColorConstants.BLACK);
 
+
+
+        float [] pointColumnWidths = {150F, 150F, 150F, 150F};
+        Table table = new Table(pointColumnWidths);
+
+        for (Car car : cars) {
+            String[] carDetails = {String.valueOf(car.getYear()), car.getMake(), car.getModel(), String.valueOf(car.getPrice())};
+            addCellsToTable(table, carDetails);
+        }
+
+        document.add(table);
         document.close();
     }
+
+    public byte[] createPdfToByteArray(List<Car> cars, PdfReportOptions options) throws Exception {
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        PdfWriter writer = new PdfWriter(byteArrayOutputStream);
+        PdfDocument pdf = new PdfDocument(writer);
+        Document document = new Document(pdf);
+
+        document.add(new Paragraph(options.getTitle())
+                        .setTextAlignment(TextAlignment.CENTER)
+                        .setFontSize(20))
+                .setFontColor(ColorConstants.GRAY);
+
+        if (options.includeDate()) {
+            document.add(new Paragraph("Generated on: " + new Date().toString())
+                    .setTextAlignment(TextAlignment.RIGHT)
+                    .setFontSize(12));
+
+        }
+
+        document.add(new Paragraph("")
+                        .setFontSize(12))
+                .setFontColor(ColorConstants.BLACK);
+
+        float [] pointColumnWidths = {150F, 150F, 150F, 150F};
+        Table table = new Table(pointColumnWidths);
+
+        for (Car car : cars) {
+            String[] carDetails = {String.valueOf(car.getYear()), car.getMake(), car.getModel(), String.valueOf(car.getPrice())};
+            addCellsToTable(table, carDetails);
+        }
+
+        document.add(table);
+        document.close();
+
+        return byteArrayOutputStream.toByteArray();
+    }
+
+
+    private void addCellsToTable(Table table, String[] data) {
+        for(String value : data){
+            Cell cell = new Cell();
+            cell.setBorder(Border.NO_BORDER);
+            cell.add(new Paragraph(value));
+            table.addCell(cell);
+        }
+        // Adding a new line after each row.
+        for(int i = 0; i < data.length; i++) {
+            Cell cell = new Cell();
+            cell.setBorder(Border.NO_BORDER);
+            cell.add(new Paragraph(" "));
+            table.addCell(cell);
+        }
+    }
+
+
 
 }

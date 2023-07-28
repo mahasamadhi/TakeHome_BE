@@ -1,32 +1,52 @@
 package com.bficara.takehome_be;
 
+import com.bficara.takehome_be.car.Car;
+import com.bficara.takehome_be.car.CarService;
+import com.bficara.takehome_be.car.CsvCarDataSource;
+import jakarta.annotation.PostConstruct;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import tools.PDFCreator;
+import tools.PdfReportOptions;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 @SpringBootApplication
 public class TakeHomeBeApplication {
 
+//	@Autowired
+//	CarService carService;
+
 	public static void main(String[] args) {
 		SpringApplication.run(TakeHomeBeApplication.class, args);
-
 		System.out.println("Project is running awesome");
-		List<List<String>> fullList = new ArrayList<>();
-		List<String> fordList = new ArrayList<>(Arrays.asList("Ford","Ranger","2023","60,000.00"));
-		List<String> acuraList = new ArrayList<>(Arrays.asList("acura","rsx","2006","30,000.00","acura","TL","20016","90,000.00"));
+	}
 
-		fullList.add(fordList);
-		fullList.add(acuraList);
-
+	@PostConstruct
+	public void runAfterStartup() {
+//		sort by year
+//		Collections.sort(fullList, Comparator.comparing(Car::getYear));
 
 		PDFCreator pdf = new PDFCreator();
+//
+		PdfReportOptions options = new PdfReportOptions(true,"Car Details","year");
+
+		String csvFilepath = "C:\\pProjects\\problem\\TakeHome_BE\\pdfInput\\data.csv";
+
+		CsvCarDataSource ds = new CsvCarDataSource();
+
+
+//		List<Car> fullListSQL = carService.getData();
+
+
+		CarService cs1 = new CarService(ds);
+
+		List<Car> fullList = cs1.getData();
+		Collections.sort(fullList, Comparator.comparing(Car::getYear));
 
 		try {
-			pdf.createPDF("C:\\pProjects\\problem\\TakeHome_BE\\PdfOutput\\report.pdf", fullList);
+			byte[] doc = pdf.createPdfToByteArray( fullList, options);
 
 		} catch (Exception e) {
 			System.out.println(e.toString());
