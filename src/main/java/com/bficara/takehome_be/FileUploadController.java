@@ -42,7 +42,7 @@ public class FileUploadController {
             dataSource.setFile(file);
             carService.setDataSource(dataSource);
             List<Car> cars = carService.getData();
-            PdfReportOptions options = new PdfReportOptions(true,"Car Details","year");
+            PdfReportOptions options = new PdfReportOptions(true,"Car Details","year", "caryear");
 		    Collections.sort(cars, Comparator.comparing(Car::getYear));
             PDFCreator pdf = new PDFCreator();
 			byte[] doc = pdf.createPdfToByteArray( cars, options);

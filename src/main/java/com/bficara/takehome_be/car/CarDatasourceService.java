@@ -5,23 +5,23 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class CarDatasourceService {
-    private final DatabaseCarDataSource databaseCarDataSource;
+    private final H2CarDatasource h2CarDatasource;
     private final CsvCarDataSource csvCarDataSource;
     private final HttpDataSource httpCarDataSource;
 
     @Autowired
-    public CarDatasourceService(DatabaseCarDataSource databaseCarDataSource,
+    public CarDatasourceService(H2CarDatasource h2CarDatasource,
                                 CsvCarDataSource csvCarDataSource,
                                 HttpDataSource httpCarDataSource) {
-        this.databaseCarDataSource = databaseCarDataSource;
+        this.h2CarDatasource = h2CarDatasource;
         this.csvCarDataSource = csvCarDataSource;
         this.httpCarDataSource = httpCarDataSource;
     }
 
     public ICarDataSource getDataSource(String sourceType) {
         switch(sourceType) {
-            case "database":
-                return databaseCarDataSource;
+            case "h2":
+                return h2CarDatasource;
             case "csv":
                 return csvCarDataSource;
             case "http":

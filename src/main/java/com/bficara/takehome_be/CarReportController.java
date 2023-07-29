@@ -38,10 +38,10 @@ public class CarReportController {
     // Endpoint for generating a report for a given year
     @GetMapping("/report/year/{year}")
     public ResponseEntity<ByteArrayResource> getReportByYear(@PathVariable int year) {
-        PdfReportOptions options = new PdfReportOptions(true, "Car Details", "year");
+        PdfReportOptions options = new PdfReportOptions(true, "Car Details", "year", "caryear");
         try {
             // The data source is selected by the service, abstracting this complexity from the controller
-            ICarDataSource dataSource = carDataSourceService.getDataSource("database");
+            ICarDataSource dataSource = carDataSourceService.getDataSource("h2");
             carService.setDataSource(dataSource);
             byte[] data = carService.generateReportByYear(year, options);
             ByteArrayResource resource = new ByteArrayResource(data);
@@ -58,12 +58,12 @@ public class CarReportController {
         }
     }
 
-    // Endpoint for generating a report based on CSV data
+    // Endpoint for generating a report based on CSV data on the filesystem
     @GetMapping("/report/csv")
     public ResponseEntity<ByteArrayResource> generateCSVReport() {
         try {
             //Class to create pdfs using iText package
-            PdfReportOptions options = new PdfReportOptions(true, "Car Details", "year");
+            PdfReportOptions options = new PdfReportOptions(true, "Car List", "year","caryear");
             PDFCreator pdf = new PDFCreator();
             // The CSV data source is selected here
             ICarDataSource dataSource = carDataSourceService.getDataSource("csv");
@@ -88,7 +88,7 @@ public class CarReportController {
 
     @GetMapping("/report/all")
     public ResponseEntity<ByteArrayResource> getAllCarsReport() {
-        PdfReportOptions options = new PdfReportOptions(true, "Car Details", "year");
+        PdfReportOptions options = new PdfReportOptions(true, "Car Details", "year", "caryear");
         try {
             // The data source is selected by the service, abstracting this complexity from the controller
             ICarDataSource dataSource = carDataSourceService.getDataSource("database");

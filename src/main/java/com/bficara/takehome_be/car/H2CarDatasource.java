@@ -7,11 +7,11 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 @Service("dbCarDataSource")
-public class DatabaseCarDataSource implements ICarDataSource {
+public class H2CarDatasource implements ICarDataSource {
 
     private final JdbcTemplate jdbcTemplate;
 
-    public DatabaseCarDataSource(JdbcTemplate jdbcTemplate) {
+    public H2CarDatasource(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
     }
 

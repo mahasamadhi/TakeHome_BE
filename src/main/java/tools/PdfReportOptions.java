@@ -2,21 +2,28 @@ package tools;
 
 public class PdfReportOptions {
 
-        public PdfReportOptions(boolean includeDate, String title, String orderByColumn) {
+        public PdfReportOptions(boolean includeDate, String title, String orderByColumn, String groupBy) {
             this.includeDate = includeDate;
             this.title = title;
             this.orderByColumn = orderByColumn;
+            this.groupBy = groupBy;
         }
 
 
         private boolean includeDate;
         private String title;
         private String orderByColumn;
+        private String groupBy;
 
+    public String getGroupBy() {
+        return groupBy;
+    }
 
+    public void setGroupBy(String groupBy) {
+        this.groupBy = groupBy;
+    }
 
-
-        public boolean includeDate() {
+    public boolean includeDate() {
             return includeDate;
         }
 

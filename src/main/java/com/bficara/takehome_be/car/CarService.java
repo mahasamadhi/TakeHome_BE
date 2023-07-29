@@ -1,6 +1,5 @@
 package com.bficara.takehome_be.car;
 
-import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Service;
 import tools.PDFCreator;
 import tools.PdfReportOptions;
@@ -32,8 +31,8 @@ public class CarService {
 
 
     public List<Car> getDataByYear(int year) {
-        if (dataSource instanceof DatabaseCarDataSource) {
-            return ((DatabaseCarDataSource) dataSource).getDataByYear(year);
+        if (dataSource instanceof H2CarDatasource) {
+            return ((H2CarDatasource) dataSource).getDataByYear(year);
         }
         throw new UnsupportedOperationException("Can't get data by year for this data source");
     }
@@ -47,6 +46,7 @@ public class CarService {
         byte[] data = pdfCreator.createPdfToByteArray(cars, options);
         return data;
     }
+
 
 
 

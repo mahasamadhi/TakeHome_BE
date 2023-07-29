@@ -30,7 +30,7 @@ public class TakeHomeBeApplication {
 
 		PDFCreator pdf = new PDFCreator();
 //
-		PdfReportOptions options = new PdfReportOptions(true,"Car Details","year");
+		PdfReportOptions options = new PdfReportOptions(true,"Car Details","year", "caryear");
 
 		String csvFilepath = "C:\\pProjects\\problem\\TakeHome_BE\\pdfInput\\data.csv";
 
