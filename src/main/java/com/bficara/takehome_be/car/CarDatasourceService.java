@@ -6,15 +6,15 @@ import org.springframework.stereotype.Service;
 @Service
 public class CarDatasourceService {
     private final H2CarDatasource h2CarDatasource;
-    private final CsvCarDataSource csvCarDataSource;
+    private final FilesystemDataSource filesystemDataSource;
     private final HttpDataSource httpCarDataSource;
 
     @Autowired
     public CarDatasourceService(H2CarDatasource h2CarDatasource,
-                                CsvCarDataSource csvCarDataSource,
+                                FilesystemDataSource filesystemDataSource,
                                 HttpDataSource httpCarDataSource) {
         this.h2CarDatasource = h2CarDatasource;
-        this.csvCarDataSource = csvCarDataSource;
+        this.filesystemDataSource = filesystemDataSource;
         this.httpCarDataSource = httpCarDataSource;
     }
 
@@ -23,7 +23,7 @@ public class CarDatasourceService {
             case "h2":
                 return h2CarDatasource;
             case "csv":
-                return csvCarDataSource;
+                return filesystemDataSource;
             case "http":
                 return httpCarDataSource;
             default:

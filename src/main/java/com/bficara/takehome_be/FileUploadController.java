@@ -37,15 +37,18 @@ public class FileUploadController {
 
     @PostMapping("/csvToPdf")
     public ResponseEntity<byte[]> uploadFile(@RequestParam("file") MultipartFile file) {
+
+        //todo add param on front-end to choose order-by
+        String param = "Year";
         try {
             HttpDataSource dataSource = (HttpDataSource) carDatasourceService.getDataSource("http");
             dataSource.setFile(file);
             carService.setDataSource(dataSource);
             List<Car> cars = carService.getData();
-            PdfReportOptions options = new PdfReportOptions(true,"Car Details","year", "caryear");
+            PdfReportOptions options = new PdfReportOptions(true,"Car List by " + param,"year", param);
 		    Collections.sort(cars, Comparator.comparing(Car::getYear));
             PDFCreator pdf = new PDFCreator();
-			byte[] doc = pdf.createPdfToByteArray( cars, options);
+			byte[] doc = pdf.createPdfToByteArrayNew( cars, options);
 
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_PDF);

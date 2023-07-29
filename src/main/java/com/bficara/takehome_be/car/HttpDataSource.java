@@ -15,8 +15,11 @@ import java.util.List;
 @Service("httpDataSource")
 public class HttpDataSource implements ICarDataSource {
     private MultipartFile file;
+
+    public List<Car> carList;
     public void setFile(MultipartFile file) {
         this.file = file;
+        getData();
     }
 
     @Override
@@ -37,10 +40,27 @@ public class HttpDataSource implements ICarDataSource {
                 Car car = new Car(year, make, model, price);
                 cars.add(car);
             }
+
+            this.carList = cars;
         } catch (IOException e) {
             e.printStackTrace();
         }
 
+        return cars;
+    }
+
+    public List<Car> getAll() {
+        return carList;
+    }
+
+    public List<Car> getAllByMake(String make) {
+        List<Car> cars = new ArrayList<>();
+
+        for (Car car:this.carList) {
+            if (car.getMake().equals(make)) {
+                cars.add(car);
+            }
+        }
         return cars;
     }
 }
