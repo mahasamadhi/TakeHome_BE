@@ -6,7 +6,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
-@Service("dbCarDataSource")
+@Service("H2CarDataSource")
 public class H2CarDatasource implements ICarDataSource {
 
     private final JdbcTemplate jdbcTemplate;
@@ -16,26 +16,27 @@ public class H2CarDatasource implements ICarDataSource {
     }
 
     @Override
-    public List<Car> getData() {
+    public List<Car> getAll() {
         String sql = "SELECT * FROM car";
 
-        RowMapper<Car> mapper = (rs, rowNum) -> new Car(
-                rs.getInt("caryear"),
-                rs.getString("make"),
-                rs.getString("model"),
-                rs.getDouble("price")
-        );
-
+        RowMapper<Car> mapper = getCarRowMapper();
         return jdbcTemplate.query(sql, mapper);
     }
 
-    public List<Car> getDataByYear(int year) {
-        String sql = "SELECT * FROM car WHERE caryear = ?";
+    @Override
+    public List<Car> getAllByYear(int year) {
+        String sql = "SELECT * FROM car where caryear = ?";
 
         RowMapper<Car> mapper = getCarRowMapper();
-
-//        return jdbcTemplate.query(sql, mapper, year);
         return jdbcTemplate.query(sql, mapper, year);
+    }
+
+    @Override
+    public List<Car> getAllByMake(String make) {
+        String sql = "SELECT * FROM car where make = ?";
+
+        RowMapper<Car> mapper = getCarRowMapper();
+        return jdbcTemplate.query(sql, mapper, make);
     }
 
     private RowMapper<Car> getCarRowMapper() {

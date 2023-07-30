@@ -1,5 +1,6 @@
 package tools;
 import com.bficara.takehome_be.car.Car;
+import com.bficara.takehome_be.car.CarService;
 import com.itextpdf.io.font.constants.StandardFonts;
 import com.itextpdf.kernel.font.PdfFont;
 import com.itextpdf.kernel.font.PdfFontFactory;
@@ -23,137 +24,36 @@ import java.util.stream.Collectors;
 
 public class PDFCreator {
 
-    public void createPdfToFilesystem(String dest, List<Car> cars, PdfReportOptions options) throws Exception {
-        PdfWriter writer = new PdfWriter(dest);
-        PdfDocument pdf = new PdfDocument(writer);
-        Document document = new Document(pdf);
-
-        document.add(new Paragraph(options.getTitle())
-                .setTextAlignment(TextAlignment.CENTER)
-                .setFontSize(20))
-                .setFontColor(ColorConstants.GRAY);
-
-        if (options.includeDate()) {
-            document.add(new Paragraph("Generated on: " + new Date().toString())
-                    .setTextAlignment(TextAlignment.RIGHT)
-                    .setFontSize(12));
-
-        }
-
-        document.add(new Paragraph("")
-                .setFontSize(12))
-                .setFontColor(ColorConstants.BLACK);
-
-
-
-        float [] pointColumnWidths = {150F, 150F, 150F, 150F};
-        Table table = new Table(pointColumnWidths);
-
-        for (Car car : cars) {
-            String[] carDetails = {String.valueOf(car.getYear()), car.getMake(), car.getModel(), String.valueOf(car.getPrice())};
-            addCellsToTable(table, carDetails);
-        }
-
-        document.add(table);
-        document.close();
-    }
-
     public byte[] createPdfToByteArray(List<Car> cars, PdfReportOptions options) throws Exception {
+        GroupByOption groupBy = options.getGroupBy();
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         PdfWriter writer = new PdfWriter(byteArrayOutputStream);
         PdfDocument pdf = new PdfDocument(writer);
         Document document = new Document(pdf);
-        PdfFont font = PdfFontFactory.createFont(StandardFonts.COURIER);
-        document.add(new Paragraph(options.getTitle())
-                        .setTextAlignment(TextAlignment.CENTER)
-                        .setFont(font)
-                        .setFontSize(24))
-                .setFontColor(ColorConstants.GRAY);
 
-        if (options.includeDate()) {
-            document.add(new Paragraph("Generated on: " + new Date().toString())
-                    .setTextAlignment(TextAlignment.RIGHT)
-                    .setFontSize(12));
-
-        }
-
-        document.add(new Paragraph("")
-                        .setFontSize(12))
-                .setFontColor(ColorConstants.BLACK);
-
-        float [] pointColumnWidths = {120F, 80F, 80F, 80F};
-        Table table = new Table(pointColumnWidths);
-
-        String currentGroupValue = "";
-        for (Car car : cars) {
-            String[] carDetails =  new String[]{"", "","",""};
-                switch (options.getGroupBy()) {
-                    case "caryear":
-                        String strValue = String.valueOf(car.getYear());
-                        if (currentGroupValue == "") {
-                            currentGroupValue = strValue;
-                            carDetails = new String[]{String.valueOf(car.getYear()), "","",""};
-                            addCellsToTable(table, carDetails);
-                            carDetails = new String[]{"", car.getMake(), car.getModel(), String.valueOf(car.getPrice())};
-                        } else if (currentGroupValue.equals(strValue)) {
-                            carDetails = new String[]{"", car.getMake(), car.getModel(), String.valueOf(car.getPrice())};
-                        } else if (currentGroupValue != "" &&  currentGroupValue != strValue){
-                            currentGroupValue = strValue;
-                            carDetails = new String[]{String.valueOf(car.getYear()), "","",""};
-                            addCellsToTable(table, carDetails);
-                            carDetails = new String[]{"", car.getMake(), car.getModel(), String.valueOf(car.getPrice())};
-                        }
-                        addCellsToTable(table, carDetails);
-
-                        break;
-                }
-
-
-            }
-
-
-        document.add(table);
-        document.close();
-
-        return byteArrayOutputStream.toByteArray();
-    }
-
-
-    public byte[] createPdfToByteArrayNew(List<Car> cars, PdfReportOptions options) throws Exception {
-        String groupBy = options.getGroupBy();
-        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-        PdfWriter writer = new PdfWriter(byteArrayOutputStream);
-        PdfDocument pdf = new PdfDocument(writer);
-        Document document = new Document(pdf);
-        PdfFont font = PdfFontFactory.createFont(StandardFonts.COURIER);
-        document.add(new Paragraph(options.getTitle())
-                        .setTextAlignment(TextAlignment.CENTER)
-                        .setFont(font)
-                        .setFontSize(24))
-                .setFontColor(ColorConstants.GRAY);
-
-        if (options.includeDate()) {
-            document.add(new Paragraph("Generated on: " + new Date().toString())
-                    .setTextAlignment(TextAlignment.RIGHT)
-                    .setFontSize(12));
-
-        }
-
-        document.add(new Paragraph("")
-                        .setFontSize(12))
-                .setFontColor(ColorConstants.BLACK);
+        //add title and date
+        addTitle(document,options);
+        addDate(document,options);
 
         float [] pointColumnWidths = {120F, 100F, 100F, 100F};
         Table table = new Table(pointColumnWidths);
 
-        if(groupBy.equals("Year")) {
-            AddColumnNames(table,"Year");
-            addEmptyRow(table,8);
-            fillPdfByYear(cars,table);
-        } else if (groupBy.equals("Make")) {
-            AddColumnNames(table,"Make");
-            addEmptyRow(table,8);
-            fillPdfByMake(cars,table);
+        switch (groupBy) {
+            case YEAR:
+                AddColumnNames(table,"Year");
+                addEmptyRow(table,8);
+                fillPdfByYear(cars,table);
+                break;
+
+            case MAKE:
+                AddColumnNames(table,"Make");
+                addEmptyRow(table,8);
+                fillPdfByMake(cars,table);
+                break;
+
+            default:
+                // You might want to throw an exception or handle the default case differently.
+                throw new IllegalArgumentException("Invalid groupBy value: " + groupBy);
         }
 
         document.add(table);
@@ -163,7 +63,7 @@ public class PDFCreator {
     }
 
     public Table fillPdfByYear(List<Car> cars, Table table) throws IOException {
-        Map<Integer, List<Car>> carMap = groupByYear(cars);
+        Map<Integer, List<Car>> carMap = CarService.groupByYear(cars);
 
         for (Map.Entry<Integer, List<Car>> entry : carMap.entrySet()) {
             int year = entry.getKey();
@@ -202,7 +102,7 @@ public class PDFCreator {
     }
 
     public Table fillPdfByMake(List<Car> cars, Table table) throws IOException {
-        Map<String, List<Car>> carMap = groupByMake(cars);
+        Map<String, List<Car>> carMap = CarService.groupByMake(cars);
 
         for (Map.Entry<String, List<Car>> entry : carMap.entrySet()) {
             String make = entry.getKey();
@@ -263,6 +163,24 @@ public class PDFCreator {
         return table;
     }
 
+    public void addTitle(Document document, PdfReportOptions options) throws IOException {
+        PdfFont font = PdfFontFactory.createFont(StandardFonts.COURIER);
+        document.add(new Paragraph(options.getTitle())
+                        .setTextAlignment(TextAlignment.CENTER)
+                        .setFont(font)
+                        .setFontSize(24)
+                .setFontColor(ColorConstants.DARK_GRAY));
+    }
+
+    public void addDate(Document document, PdfReportOptions options) {
+        if (options.includeDate()) {
+            document.add(new Paragraph("Generated on: " + new Date().toString())
+                    .setTextAlignment(TextAlignment.RIGHT)
+                    .setFontSize(12));
+        }
+    }
+
+
     public Table AddColumnNames(Table table,String groupBy) throws IOException {
 
             PdfFont font = PdfFontFactory.createFont(StandardFonts.TIMES_ITALIC);
@@ -277,7 +195,6 @@ public class PDFCreator {
                 addCellToTable(table, "Model", font, 16, "columnName");
                 addCellToTable(table, "Price", font, 16, "columnName");
             }
-
 
         return table;
     }
@@ -323,20 +240,6 @@ public class PDFCreator {
             table.addCell(cell);
         }
     }
-    public Map<String, List<Car>> groupByMake(List<Car> carList) {
-        Map<String, List<Car>> carsByMake = carList.stream()
-                .collect(Collectors.groupingBy(Car::getMake));
-
-        return carsByMake;
-    }
-
-    public Map<Integer, List<Car>> groupByYear(List<Car> carList) {
-        Map<Integer, List<Car>> carsByYear = carList.stream()
-                .collect(Collectors.groupingBy(Car::getYear));
-        return carsByYear;
-    }
-
-
 
 
 }

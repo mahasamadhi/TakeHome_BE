@@ -28,23 +28,19 @@ public class CarService {
         this.dataSource = ds;
     }
 
-    public List<Car> getData() {
-        return dataSource.getData();
+    public List<Car> getAll() {
+        return dataSource.getAll();
     }
 
 
-    public List<Car> getDataByYear(int year) {
-        if (dataSource instanceof H2CarDatasource) {
-            return ((H2CarDatasource) dataSource).getDataByYear(year);
+    public List<Car> getAllByYear(int year) {
+            return dataSource.getAllByYear(year);
         }
-        throw new UnsupportedOperationException("Can't get data by year for this data source");
-    }
 
     public byte[] generateReportByYear(int year, PdfReportOptions options) throws Exception {
 
         PDFCreator pdfCreator = new PDFCreator();
-        List<Car> cars = getDataByYear(year);
-
+        List<Car> cars = getAllByYear(year);
         Collections.sort(cars, Comparator.comparing(Car::getYear));
         byte[] data = pdfCreator.createPdfToByteArray(cars, options);
         return data;
@@ -53,7 +49,18 @@ public class CarService {
 
 
 
+    public static Map<String, List<Car>> groupByMake(List<Car> carList) {
+        Map<String, List<Car>> carsByMake = carList.stream()
+                .collect(Collectors.groupingBy(Car::getMake));
 
+        return carsByMake;
+    }
+
+    public static Map<Integer, List<Car>> groupByYear(List<Car> carList) {
+        Map<Integer, List<Car>> carsByYear = carList.stream()
+                .collect(Collectors.groupingBy(Car::getYear));
+        return carsByYear;
+    }
 
 
 
