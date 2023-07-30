@@ -1,10 +1,10 @@
-package com.bficara.takehome_be.car.Obsolete;
+package com.bficara.takehome_be.obsolete;
 
-import com.bficara.takehome_be.car.Car;
-import com.bficara.takehome_be.car.ICarDataSource;
+import com.bficara.takehome_be.model.Car;
+import com.bficara.takehome_be.datasource.ICarDataSource;
 import org.apache.commons.csv.CSVRecord;
 import org.springframework.stereotype.Service;
-import tools.CSVReader;
+import com.bficara.takehome_be.tools.CSVReader;
 
 import java.util.ArrayList;
 import java.util.List;

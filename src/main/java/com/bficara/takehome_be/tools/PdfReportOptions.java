@@ -1,4 +1,4 @@
-package tools;
+package com.bficara.takehome_be.tools;
 
 public class PdfReportOptions {
 

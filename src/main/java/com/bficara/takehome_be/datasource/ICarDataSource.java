@@ -1,4 +1,6 @@
-package com.bficara.takehome_be.car;
+package com.bficara.takehome_be.datasource;
+
+import com.bficara.takehome_be.model.Car;
 
 import java.util.List;
 

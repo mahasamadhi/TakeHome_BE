@@ -1,6 +1,6 @@
-package tools;
-import com.bficara.takehome_be.car.Car;
-import com.bficara.takehome_be.car.CarService;
+package com.bficara.takehome_be.report;
+import com.bficara.takehome_be.model.Car;
+import com.bficara.takehome_be.service.CarService;
 import com.itextpdf.io.font.constants.StandardFonts;
 import com.itextpdf.kernel.font.PdfFont;
 import com.itextpdf.kernel.font.PdfFontFactory;
@@ -11,18 +11,17 @@ import com.itextpdf.layout.borders.Border;
 import com.itextpdf.layout.element.Cell;
 import com.itextpdf.layout.element.Paragraph;
 import com.itextpdf.layout.element.Table;
-import com.itextpdf.layout.element.Text;
-import com.itextpdf.layout.properties.TextAlignment;
-import com.itextpdf.kernel.colors.ColorConstants;
+import com.bficara.takehome_be.tools.AbstractPDFCreator;
+import com.bficara.takehome_be.tools.CellTypeOption;
+import com.bficara.takehome_be.tools.GroupByOption;
+import com.bficara.takehome_be.tools.PdfReportOptions;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
-public class PDFCreator {
+public class CarPDFCreator extends AbstractPDFCreator {
 
     public byte[] createPdfToByteArray(List<Car> cars, PdfReportOptions options) throws Exception {
         GroupByOption groupBy = options.getGroupBy();
@@ -40,13 +39,13 @@ public class PDFCreator {
 
         switch (groupBy) {
             case YEAR:
-                AddColumnNames(table,"Year");
+                AddCarColumnNames(table,"Year");
                 addEmptyRow(table,8);
                 fillPdfByYear(cars,table);
                 break;
 
             case MAKE:
-                AddColumnNames(table,"Make");
+                AddCarColumnNames(table,"Make");
                 addEmptyRow(table,8);
                 fillPdfByMake(cars,table);
                 break;
@@ -63,7 +62,7 @@ public class PDFCreator {
     }
 
     public Table fillPdfByYear(List<Car> cars, Table table) throws IOException {
-        Map<Integer, List<Car>> carMap = CarService.groupByYear(cars);
+        Map<Integer, List<Car>> carMap = CarService.mapByYear(cars);
 
         for (Map.Entry<Integer, List<Car>> entry : carMap.entrySet()) {
             int year = entry.getKey();
@@ -102,7 +101,7 @@ public class PDFCreator {
     }
 
     public Table fillPdfByMake(List<Car> cars, Table table) throws IOException {
-        Map<String, List<Car>> carMap = CarService.groupByMake(cars);
+        Map<String, List<Car>> carMap = CarService.mapByMake(cars);
 
         for (Map.Entry<String, List<Car>> entry : carMap.entrySet()) {
             String make = entry.getKey();
@@ -163,83 +162,25 @@ public class PDFCreator {
         return table;
     }
 
-    public void addTitle(Document document, PdfReportOptions options) throws IOException {
-        PdfFont font = PdfFontFactory.createFont(StandardFonts.COURIER);
-        document.add(new Paragraph(options.getTitle())
-                        .setTextAlignment(TextAlignment.CENTER)
-                        .setFont(font)
-                        .setFontSize(24)
-                .setFontColor(ColorConstants.DARK_GRAY));
-    }
 
-    public void addDate(Document document, PdfReportOptions options) {
-        if (options.includeDate()) {
-            document.add(new Paragraph("Generated on: " + new Date().toString())
-                    .setTextAlignment(TextAlignment.RIGHT)
-                    .setFontSize(12));
-        }
-    }
-
-
-    public Table AddColumnNames(Table table,String groupBy) throws IOException {
+    public Table AddCarColumnNames(Table table, String groupBy) throws IOException {
 
             PdfFont font = PdfFontFactory.createFont(StandardFonts.TIMES_ITALIC);
             if (groupBy.equals("Year")) {
-                addCellToTable(table, "Year", font, 16, "columnName");
-                addCellToTable(table, "Make", font, 16, "columnName");
-                addCellToTable(table, "Model", font, 16, "columnName");
-                addCellToTable(table, "Price", font, 16, "columnName");
+                addCellToTable(table, "Year", font, 16, CellTypeOption.UNDERLINE);
+                addCellToTable(table, "Make", font, 16, CellTypeOption.UNDERLINE);
+                addCellToTable(table, "Model", font, 16, CellTypeOption.UNDERLINE);
+                addCellToTable(table, "Price", font, 16, CellTypeOption.UNDERLINE);
             } else if (groupBy.equals("Make")) {
-                addCellToTable(table, "Make", font, 16, "columnName");
-                addCellToTable(table, "Year", font, 16, "columnName");
-                addCellToTable(table, "Model", font, 16, "columnName");
-                addCellToTable(table, "Price", font, 16, "columnName");
+                addCellToTable(table, "Make", font, 16, CellTypeOption.UNDERLINE);
+                addCellToTable(table, "Year", font, 16, CellTypeOption.UNDERLINE);
+                addCellToTable(table, "Model", font, 16, CellTypeOption.UNDERLINE);
+                addCellToTable(table, "Price", font, 16, CellTypeOption.UNDERLINE);
             }
 
         return table;
     }
 
-    private void addCellToTable(Table table, String text, PdfFont font, float fontSize, String cellType) throws IOException {
-        Text txt = new Text(text).setFont(font).setFontSize(fontSize);
-        if ("columnName".equals(cellType)) {
-            txt.setUnderline();
-        }
-        Paragraph para = new Paragraph().add(txt);
-        Cell cell = new Cell();
-        cell.setBorder(Border.NO_BORDER);
-        cell.add(para);
-        table.addCell(cell);
-    }
-
-
-    private void addCellsToTable(Table table, String[] data) throws IOException {
-        for(var i = 0; i<data.length; i++){
-            String value = data[i];
-            Paragraph para = new Paragraph(value);
-            PdfFont font = PdfFontFactory.createFont(StandardFonts.COURIER);
-            para.setFont(font);
-            if (i == 0) {
-                font = PdfFontFactory.createFont(StandardFonts.COURIER_BOLD);
-                para.setFontSize(14);
-                para.setFont(font);
-            }
-            Cell cell = new Cell();
-            cell.setBorder(Border.NO_BORDER);
-            cell.add(para);
-            table.addCell(cell);
-        }
-        // Adding a new line after each row.
-        addEmptyRow(table,4);
-    }
-
-    public void addEmptyRow(Table table, int cellsPerRow) {
-        for(int i = 0; i < cellsPerRow; i++) {
-            Cell cell = new Cell();
-            cell.setBorder(Border.NO_BORDER);
-            cell.add(new Paragraph(" "));
-            table.addCell(cell);
-        }
-    }
 
 
 }

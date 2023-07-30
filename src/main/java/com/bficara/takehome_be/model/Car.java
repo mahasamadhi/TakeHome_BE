@@ -1,4 +1,4 @@
-package com.bficara.takehome_be.car;
+package com.bficara.takehome_be.model;
 
 public class Car {
 

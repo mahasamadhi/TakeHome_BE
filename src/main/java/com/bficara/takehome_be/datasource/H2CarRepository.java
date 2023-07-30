@@ -1,5 +1,7 @@
-package com.bficara.takehome_be.car;
+package com.bficara.takehome_be.datasource;
 
+import com.bficara.takehome_be.datasource.ICarDataSource;
+import com.bficara.takehome_be.model.Car;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Service;
@@ -7,11 +9,11 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 @Service("H2CarDataSource")
-public class H2CarDatasource implements ICarDataSource {
+public class H2CarRepository implements ICarDataSource {
 
     private final JdbcTemplate jdbcTemplate;
 
-    public H2CarDatasource(JdbcTemplate jdbcTemplate) {
+    public H2CarRepository(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
     }
 

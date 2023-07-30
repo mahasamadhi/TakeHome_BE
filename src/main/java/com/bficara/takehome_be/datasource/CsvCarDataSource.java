@@ -1,5 +1,6 @@
-package com.bficara.takehome_be.car;
+package com.bficara.takehome_be.datasource;
 
+import com.bficara.takehome_be.model.Car;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVRecord;
 import org.springframework.stereotype.Service;
@@ -10,7 +11,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
