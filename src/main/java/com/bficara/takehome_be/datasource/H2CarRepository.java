@@ -4,11 +4,12 @@ import com.bficara.takehome_be.datasource.ICarDataSource;
 import com.bficara.takehome_be.model.Car;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
-@Service("H2CarDataSource")
+@Repository
 public class H2CarRepository implements ICarDataSource {
 
     private final JdbcTemplate jdbcTemplate;

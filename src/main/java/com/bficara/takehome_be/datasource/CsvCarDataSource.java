@@ -3,6 +3,8 @@ package com.bficara.takehome_be.datasource;
 import com.bficara.takehome_be.model.Car;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVRecord;
+import org.springframework.context.annotation.Primary;
+import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -14,7 +16,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@Service("csvCarDataSource")
+@Primary
+@Repository
 public class CsvCarDataSource implements ICarDataSource {
 
     public CsvCarDataSource() {

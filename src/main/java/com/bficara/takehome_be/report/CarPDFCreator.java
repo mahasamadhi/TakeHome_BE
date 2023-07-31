@@ -1,6 +1,7 @@
 package com.bficara.takehome_be.report;
 import com.bficara.takehome_be.model.Car;
 import com.bficara.takehome_be.service.CarService;
+import com.bficara.takehome_be.tools.*;
 import com.itextpdf.io.font.constants.StandardFonts;
 import com.itextpdf.kernel.font.PdfFont;
 import com.itextpdf.kernel.font.PdfFontFactory;
@@ -11,17 +12,17 @@ import com.itextpdf.layout.borders.Border;
 import com.itextpdf.layout.element.Cell;
 import com.itextpdf.layout.element.Paragraph;
 import com.itextpdf.layout.element.Table;
-import com.bficara.takehome_be.tools.AbstractPDFCreator;
-import com.bficara.takehome_be.tools.CellTypeOption;
-import com.bficara.takehome_be.tools.GroupByOption;
-import com.bficara.takehome_be.tools.PdfReportOptions;
+import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
+@Service
 public class CarPDFCreator extends AbstractPDFCreator {
+
 
     public byte[] createPdfToByteArray(List<Car> cars, PdfReportOptions options) throws Exception {
         GroupByOption groupBy = options.getGroupBy();
@@ -41,13 +42,15 @@ public class CarPDFCreator extends AbstractPDFCreator {
             case YEAR:
                 AddCarColumnNames(table,"Year");
                 addEmptyRow(table,8);
-                fillPdfByYear(cars,table);
+                Map<Integer, List<Car>> carMap = groupByYear(cars);
+                fillPdfByYear(carMap,table);
                 break;
 
             case MAKE:
                 AddCarColumnNames(table,"Make");
                 addEmptyRow(table,8);
-                fillPdfByMake(cars,table);
+                Map<String, List<Car>> carMapMake = groupByMake(cars);
+                fillPdfByMake(carMapMake,table);
                 break;
 
             default:
@@ -61,8 +64,7 @@ public class CarPDFCreator extends AbstractPDFCreator {
         return byteArrayOutputStream.toByteArray();
     }
 
-    public Table fillPdfByYear(List<Car> cars, Table table) throws IOException {
-        Map<Integer, List<Car>> carMap = CarService.mapByYear(cars);
+    public Table fillPdfByYear(Map<Integer, List<Car>> carMap, Table table) throws IOException {
 
         for (Map.Entry<Integer, List<Car>> entry : carMap.entrySet()) {
             int year = entry.getKey();
@@ -100,8 +102,7 @@ public class CarPDFCreator extends AbstractPDFCreator {
         return table;
     }
 
-    public Table fillPdfByMake(List<Car> cars, Table table) throws IOException {
-        Map<String, List<Car>> carMap = CarService.mapByMake(cars);
+    public Table fillPdfByMake(Map<String, List<Car>> carMap, Table table) throws IOException {
 
         for (Map.Entry<String, List<Car>> entry : carMap.entrySet()) {
             String make = entry.getKey();
@@ -182,5 +183,14 @@ public class CarPDFCreator extends AbstractPDFCreator {
     }
 
 
+    public Map<String, List<Car>> groupByMake(List<Car> carList) {
+        return carList.stream()
+                .collect(Collectors.groupingBy(Car::getMake));
+    }
+
+    public Map<Integer, List<Car>> groupByYear(List<Car> carList) {
+        return carList.stream()
+                .collect(Collectors.groupingBy(Car::getYear));
+    }
 
 }

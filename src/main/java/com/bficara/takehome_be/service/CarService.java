@@ -30,17 +30,6 @@ public class CarService {
         }
 
 
-    public static Map<String, List<Car>> mapByMake(List<Car> carList) {
-        Map<String, List<Car>> carsByMake = carList.stream()
-                .collect(Collectors.groupingBy(Car::getMake));
-        return carsByMake;
-    }
-
-    public static Map<Integer, List<Car>> mapByYear(List<Car> carList) {
-        Map<Integer, List<Car>> carsByYear = carList.stream()
-                .collect(Collectors.groupingBy(Car::getYear));
-        return carsByYear;
-    }
 
 
 

@@ -17,7 +17,7 @@ import java.util.Date;
 
 public abstract class AbstractPDFCreator {
 
-    protected void addTitle(Document document, PdfReportOptions options) throws IOException {
+    public void addTitle(Document document, PdfReportOptions options) throws IOException {
         PdfFont font = PdfFontFactory.createFont(StandardFonts.COURIER);
         document.add(new Paragraph(options.getTitle())
                 .setTextAlignment(TextAlignment.CENTER)
@@ -26,7 +26,7 @@ public abstract class AbstractPDFCreator {
                 .setFontColor(ColorConstants.DARK_GRAY));
     }
 
-    protected void addDate(Document document, PdfReportOptions options) {
+    public void addDate(Document document, PdfReportOptions options) {
         if (options.includeDate()) {
             document.add(new Paragraph("Generated on: " + new Date().toString())
                     .setTextAlignment(TextAlignment.RIGHT)
@@ -47,7 +47,7 @@ public abstract class AbstractPDFCreator {
         table.addCell(cell);
     }
 
-    protected void addEmptyRow(Table table, int cellsPerRow) {
+    public void addEmptyRow(Table table, int cellsPerRow) {
         for(int i = 0; i < cellsPerRow; i++) {
             Cell cell = new Cell();
             cell.setBorder(Border.NO_BORDER);
