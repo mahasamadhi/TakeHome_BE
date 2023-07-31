@@ -114,6 +114,13 @@ public class CarReportController {
         }
     }
 
+    @DeleteMapping("/h2/deleteAll")
+    public ResponseEntity<String> deleteAllFromH2() {
+        H2CarRepository h2CarRepository = (H2CarRepository) carDatasourceService.getDataSource("h2");
+        h2CarRepository.deleteAll();
+        return ResponseEntity.ok().body("Success");
+    }
+
 
     // Endpoint for generating a report for a given year
     @GetMapping("/report/h2/year/{year}")

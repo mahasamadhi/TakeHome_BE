@@ -61,4 +61,9 @@ public class H2CarRepository implements ICarDataSource {
 
         jdbcTemplate.batchUpdate(sql, parameters);
     }
+
+    public void deleteAll() {
+        String sql = "delete from car";
+        jdbcTemplate.update(sql);
+    }
 }
