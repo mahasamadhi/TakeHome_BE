@@ -1,5 +1,5 @@
 package com.bficara.takehome_be.controller;
-import com.bficara.takehome_be.tools.PDFCreator;
+import com.bficara.takehome_be.datasource.H2CarRepository;
 
 import com.bficara.takehome_be.datasource.CsvCarDataSource;
 import com.bficara.takehome_be.datasource.ICarDataSource;
@@ -7,7 +7,6 @@ import com.bficara.takehome_be.model.Car;
 import com.bficara.takehome_be.service.CarDatasourceService;
 import com.bficara.takehome_be.service.CarService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -91,6 +90,30 @@ public class CarReportController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage().getBytes());
         }
     }
+
+    @PostMapping("/h2/insertCsv")
+    public ResponseEntity<String> InsertCsvToH2(@RequestParam("file") MultipartFile file) {
+
+        try {
+            CsvCarDataSource dataSource = (CsvCarDataSource) carDatasourceService.getDataSource("csv");
+            dataSource.setFile(file);
+            dataSource.processData();
+            carService.setDataSource(dataSource);
+            List<Car> cars = carService.getAll();
+
+            // Inject H2CarRepository into your controller
+            H2CarRepository h2CarRepository = (H2CarRepository) carDatasourceService.getDataSource("h2");
+
+            // Save the cars into your H2 database
+            h2CarRepository.saveAll(cars);
+
+            return ResponseEntity.ok().body("Success");
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
 
     // Endpoint for generating a report for a given year
     @GetMapping("/report/h2/year/{year}")

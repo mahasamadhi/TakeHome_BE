@@ -8,6 +8,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Repository
 public class H2CarRepository implements ICarDataSource {
@@ -49,5 +50,15 @@ public class H2CarRepository implements ICarDataSource {
                 rs.getString("model"),
                 rs.getDouble("price")
         );
+    }
+
+    public void saveAll(List<Car> cars) {
+        String sql = "INSERT INTO car (caryear, make, model, price) VALUES (?, ?, ?, ?)";
+
+        List<Object[]> parameters = cars.stream()
+                .map(car -> new Object[] {car.getYear(), car.getMake(), car.getModel(), car.getPrice()})
+                .collect(Collectors.toList());
+
+        jdbcTemplate.batchUpdate(sql, parameters);
     }
 }
