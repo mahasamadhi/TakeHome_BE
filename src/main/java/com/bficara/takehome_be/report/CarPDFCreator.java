@@ -1,6 +1,5 @@
 package com.bficara.takehome_be.report;
 import com.bficara.takehome_be.model.Car;
-import com.bficara.takehome_be.service.CarService;
 import com.bficara.takehome_be.tools.*;
 import com.itextpdf.io.font.constants.StandardFonts;
 import com.itextpdf.kernel.font.PdfFont;
@@ -16,6 +15,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -34,23 +34,26 @@ public class CarPDFCreator extends AbstractPDFCreator {
         //add title and date
         addTitle(document,options);
         addDate(document,options);
+        //add price (msrp + tax)
+        addPrice(cars, options.getTaxRate());
 
-        float [] pointColumnWidths = {120F, 100F, 100F, 100F};
+        float [] pointColumnWidths = {100F, 100F, 100F, 100F, 100F};
         Table table = new Table(pointColumnWidths);
+        int numColumns = pointColumnWidths.length;
 
         switch (groupBy) {
             case YEAR:
                 AddCarColumnNames(table,"Year");
-                addEmptyRow(table,8);
+                addEmptyRow(table, numColumns*2);
                 Map<Integer, List<Car>> carMap = groupByYear(cars);
-                fillPdfByYear(carMap,table);
+                fillPdfByYear(carMap,table,numColumns);
                 break;
 
             case MAKE:
                 AddCarColumnNames(table,"Make");
-                addEmptyRow(table,8);
+                addEmptyRow(table,numColumns*2);
                 Map<String, List<Car>> carMapMake = groupByMake(cars);
-                fillPdfByMake(carMapMake,table);
+                fillPdfByMake(carMapMake,table,numColumns);
                 break;
 
             default:
@@ -64,14 +67,21 @@ public class CarPDFCreator extends AbstractPDFCreator {
         return byteArrayOutputStream.toByteArray();
     }
 
-    public Table fillPdfByYear(Map<Integer, List<Car>> carMap, Table table) throws IOException {
+    public void addPrice(List<Car> cars, double taxRate) {
+        for (Car car:cars) {
+            double price = taxRate * car.getMsrp() ;
+            price = Math.round(price * 100.0) / 100.0;
+            car.setPrice(price);
+        }
+    }
+
+    public Table fillPdfByYear(Map<Integer, List<Car>> carMap, Table table, int numColumns) throws IOException {
 
         for (Map.Entry<Integer, List<Car>> entry : carMap.entrySet()) {
             int year = entry.getKey();
             String strYear = String.valueOf(year);
             List<Car> carsInYear = entry.getValue();
-
-            AddHeaderRow(table, strYear);
+            AddHeaderRow(table, strYear, numColumns);
 
             for (Car car : carsInYear) {
                 // Create a blank cell
@@ -91,6 +101,12 @@ public class CarPDFCreator extends AbstractPDFCreator {
                 modelPara.setFontSize(12);
                 table.addCell(new Cell().setBorder(Border.NO_BORDER).add(modelPara));
 
+                // Create cell for msrp
+                String msrp = "$" + car.getMsrp();
+                Paragraph msrpPara = new Paragraph(msrp);
+                msrpPara.setFontSize(12);
+                table.addCell(new Cell().setBorder(Border.NO_BORDER).add(msrpPara));
+
                 // Create cell for price
                 String price = "$" + car.getPrice();
                 Paragraph pricePara = new Paragraph(price);
@@ -102,14 +118,14 @@ public class CarPDFCreator extends AbstractPDFCreator {
         return table;
     }
 
-    public Table fillPdfByMake(Map<String, List<Car>> carMap, Table table) throws IOException {
+    public Table fillPdfByMake(Map<String, List<Car>> carMap, Table table, int numColumns) throws IOException {
 
         for (Map.Entry<String, List<Car>> entry : carMap.entrySet()) {
             String make = entry.getKey();
             List<Car> carsByMake = entry.getValue();
 
-            AddHeaderRow(table, make);
-            addEmptyRow(table,4);
+            AddHeaderRow(table, make,numColumns);
+            addEmptyRow(table,numColumns);
 
             for (Car car : carsByMake) {
                 // Create a blank cell
@@ -129,6 +145,12 @@ public class CarPDFCreator extends AbstractPDFCreator {
                 modelPara.setFontSize(12);
                 table.addCell(new Cell().setBorder(Border.NO_BORDER).add(modelPara));
 
+                // Create cell for msrp
+                String msrp = "$" + car.getMsrp();
+                Paragraph msrpPara = new Paragraph(msrp);
+                msrpPara.setFontSize(12);
+                table.addCell(new Cell().setBorder(Border.NO_BORDER).add(msrpPara));
+
                 // Create cell for price
                 String price = "$" + car.getPrice();
                 Paragraph pricePara = new Paragraph(price);
@@ -140,7 +162,7 @@ public class CarPDFCreator extends AbstractPDFCreator {
         return table;
     }
 
-    public Table AddHeaderRow(Table table,String groupByValue) throws IOException {
+    public Table AddHeaderRow(Table table,String groupByValue,int numColumns) throws IOException {
 
         Paragraph para = new Paragraph(groupByValue);
         PdfFont font = PdfFontFactory.createFont(StandardFonts.COURIER);
@@ -156,9 +178,9 @@ public class CarPDFCreator extends AbstractPDFCreator {
         Cell emptyCell = new Cell();
         emptyCell.setBorder(Border.NO_BORDER);
         emptyCell.add(emptyPara);
-        table.addCell(emptyCell);
-        table.addCell(emptyCell);
-        table.addCell(emptyCell);
+        for (int i = 1; i< numColumns; i++) {
+            table.addCell(emptyCell);
+        }
 
         return table;
     }
@@ -170,14 +192,14 @@ public class CarPDFCreator extends AbstractPDFCreator {
             if (groupBy.equals("Year")) {
                 addCellToTable(table, "Year", font, 16, CellTypeOption.UNDERLINE);
                 addCellToTable(table, "Make", font, 16, CellTypeOption.UNDERLINE);
-                addCellToTable(table, "Model", font, 16, CellTypeOption.UNDERLINE);
-                addCellToTable(table, "Price", font, 16, CellTypeOption.UNDERLINE);
             } else if (groupBy.equals("Make")) {
                 addCellToTable(table, "Make", font, 16, CellTypeOption.UNDERLINE);
                 addCellToTable(table, "Year", font, 16, CellTypeOption.UNDERLINE);
-                addCellToTable(table, "Model", font, 16, CellTypeOption.UNDERLINE);
-                addCellToTable(table, "Price", font, 16, CellTypeOption.UNDERLINE);
+
             }
+            addCellToTable(table, "Model", font, 16, CellTypeOption.UNDERLINE);
+            addCellToTable(table, "MSRP", font, 16, CellTypeOption.UNDERLINE);
+            addCellToTable(table, "Price", font, 16, CellTypeOption.UNDERLINE);
 
         return table;
     }

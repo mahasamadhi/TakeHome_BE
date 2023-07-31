@@ -43,8 +43,8 @@ public class FilesystemDataSource implements ICarDataSource {
             int year = Integer.parseInt(record.get("year"));
             String make = record.get("make");
             String model = record.get("model");
-            double price = Double.parseDouble(record.get("msrp")); // adjust this as needed
-            Car car = new Car(year, make, model, price);
+            double msrp = Double.parseDouble(record.get("msrp")); // adjust this as needed
+            Car car = new Car(year, make, model, msrp);
             cars.add(car);
         }
         return cars;

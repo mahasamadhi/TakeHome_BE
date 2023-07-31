@@ -52,7 +52,8 @@ public class CarReportController {
             dataSource.processData();
             carService.setDataSource(dataSource);
             List<Car> cars = carService.getAll();
-            PdfReportOptions options = new PdfReportOptions(true,"Car List by Year","year", GroupByOption.YEAR);
+            PdfReportOptions options = new PdfReportOptions(
+                    true, "Car List by Year","year", GroupByOption.YEAR, 1.07);
             Collections.sort(cars, Comparator.comparing(Car::getYear));
             CarPDFCreator pdf = new CarPDFCreator();
             byte[] doc = pdf.createPdfToByteArray( cars, options);
@@ -76,7 +77,8 @@ public class CarReportController {
             dataSource.processData();
             carService.setDataSource(dataSource);
             List<Car> cars = carService.getAll();
-            PdfReportOptions options = new PdfReportOptions(true,"Car List by Make","year", GroupByOption.MAKE);
+            PdfReportOptions options = new PdfReportOptions(
+                    true,"Car List by Make","year", GroupByOption.MAKE,1.07);
             Collections.sort(cars, Comparator.comparing(Car::getYear));
             CarPDFCreator pdf = new CarPDFCreator();
             byte[] doc = pdf.createPdfToByteArray( cars, options);
@@ -125,7 +127,8 @@ public class CarReportController {
     // Endpoint for generating a report for a given year
     @GetMapping("/report/h2/year/{year}")
     public ResponseEntity<ByteArrayResource> getH2ReportByYear(@PathVariable int year) {
-        PdfReportOptions options = new PdfReportOptions(true, "Car List by Year", "year", GroupByOption.YEAR);
+        PdfReportOptions options = new PdfReportOptions(
+                true, "Car List by Year", "year", GroupByOption.YEAR,1.07);
         try {
             // The data source is selected by the service, abstracting this complexity from the controller
             ICarDataSource dataSource = carDatasourceService.getDataSource("h2");
@@ -152,7 +155,8 @@ public class CarReportController {
     //get all from H2 database
     @GetMapping("/report/h2/groupByYear")
     public ResponseEntity<ByteArrayResource> getCarReportByYear() {
-        PdfReportOptions options = new PdfReportOptions(true, "Car Details", "year", GroupByOption.YEAR);
+        PdfReportOptions options = new PdfReportOptions(
+                true, "Car Details", "year", GroupByOption.YEAR,1.07);
         try {
             // The data source is selected by the service, abstracting this complexity from the controller
             ICarDataSource dataSource = carDatasourceService.getDataSource("h2");
@@ -179,7 +183,8 @@ public class CarReportController {
 
     @GetMapping("/report/h2/groupByMake")
     public ResponseEntity<ByteArrayResource> getH2CarReportByMake() {
-        PdfReportOptions options = new PdfReportOptions(true, "Car Details", "year", GroupByOption.MAKE);
+        PdfReportOptions options = new PdfReportOptions(
+                true, "Car Details", "year", GroupByOption.MAKE,1.07);
         try {
             // The data source is selected by the service, abstracting this complexity from the controller
             ICarDataSource dataSource = carDatasourceService.getDataSource("h2");
@@ -207,7 +212,8 @@ public class CarReportController {
     public ResponseEntity<ByteArrayResource> getCsvCarReportbyYear() {
         try {
             //Class to create pdfs using iText package
-            PdfReportOptions options = new PdfReportOptions(true, "Car List", "year",GroupByOption.YEAR);
+            PdfReportOptions options = new PdfReportOptions(
+                    true, "Car List", "year",GroupByOption.YEAR,1.07);
             CarPDFCreator pdf = new CarPDFCreator();
             // The CSV data source is selected here
             ICarDataSource dataSource = carDatasourceService.getDataSource("csv");

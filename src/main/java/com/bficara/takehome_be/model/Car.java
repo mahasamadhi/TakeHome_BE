@@ -5,17 +5,19 @@ public class Car {
     private int year;
     private String make;
     private String model;
+    private double msrp;
     private double price;
 
     public Car() {
     }
 
-    public Car(int year, String make, String model, double price) {
+    public Car(int year, String make, String model, double msrp) {
         this.year = year;
         this.make = make;
         this.model = model;
-        this.price = price;
+        this.msrp = msrp;
     }
+
 
     public int getYear() {
         return year;
@@ -23,6 +25,13 @@ public class Car {
 
     public void setYear(int year) {
         this.year = year;
+    }
+    public double getPrice() {
+        return price;
+    }
+
+    public void setPrice(double price) {
+        this.price = price;
     }
 
     public String getMake() {
@@ -41,12 +50,12 @@ public class Car {
         this.model = model;
     }
 
-    public double getPrice() {
-        return price;
+    public double getMsrp() {
+        return msrp;
     }
 
-    public void setPrice(double price) {
-        this.price = price;
+    public void setMsrp(double msrp) {
+        this.msrp = msrp;
     }
 
     @Override
@@ -55,7 +64,7 @@ public class Car {
                 "year=" + year +
                 ", make='" + make + '\'' +
                 ", model='" + model + '\'' +
-                ", price=" + price +
+                ", msrp=" + msrp +
                 '}';
     }
 }

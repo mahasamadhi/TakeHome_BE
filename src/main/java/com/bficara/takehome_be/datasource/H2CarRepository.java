@@ -1,11 +1,9 @@
 package com.bficara.takehome_be.datasource;
 
-import com.bficara.takehome_be.datasource.ICarDataSource;
 import com.bficara.takehome_be.model.Car;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
-import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -48,15 +46,15 @@ public class H2CarRepository implements ICarDataSource {
                 rs.getInt("caryear"),
                 rs.getString("make"),
                 rs.getString("model"),
-                rs.getDouble("price")
+                rs.getDouble("msrp")
         );
     }
 
     public void saveAll(List<Car> cars) {
-        String sql = "INSERT INTO car (caryear, make, model, price) VALUES (?, ?, ?, ?)";
+        String sql = "INSERT INTO car (caryear, make, model, msrp) VALUES (?, ?, ?, ?)";
 
         List<Object[]> parameters = cars.stream()
-                .map(car -> new Object[] {car.getYear(), car.getMake(), car.getModel(), car.getPrice()})
+                .map(car -> new Object[] {car.getYear(), car.getMake(), car.getModel(), car.getMsrp()})
                 .collect(Collectors.toList());
 
         jdbcTemplate.batchUpdate(sql, parameters);
