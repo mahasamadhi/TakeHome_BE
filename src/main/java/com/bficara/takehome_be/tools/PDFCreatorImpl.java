@@ -11,12 +11,15 @@ import com.itextpdf.layout.element.Paragraph;
 import com.itextpdf.layout.element.Table;
 import com.itextpdf.layout.element.Text;
 import com.itextpdf.layout.properties.TextAlignment;
+import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.util.Date;
 
-public abstract class AbstractPDFCreator {
+@Service
+public class PDFCreatorImpl implements PDFCreator {
 
+    @Override
     public void addTitle(Document document, PdfReportOptions options) throws IOException {
         PdfFont font = PdfFontFactory.createFont(StandardFonts.COURIER);
         document.add(new Paragraph(options.getTitle())
@@ -25,7 +28,7 @@ public abstract class AbstractPDFCreator {
                 .setFontSize(24)
                 .setFontColor(ColorConstants.DARK_GRAY));
     }
-
+    @Override
     public void addDate(Document document, PdfReportOptions options) {
         if (options.includeDate()) {
             document.add(new Paragraph("Generated on: " + new Date().toString())
@@ -35,7 +38,8 @@ public abstract class AbstractPDFCreator {
     }
 
 
-    protected void addCellToTable(Table table, String text, PdfFont font, float fontSize, CellTypeOption cellType) throws IOException {
+    @Override
+    public void addCellToTable(Table table, String text, PdfFont font, int fontSize, CellTypeOption cellType) throws java.io.IOException {
         Text txt = new Text(text).setFont(font).setFontSize(fontSize);
         if (cellType.equals(CellTypeOption.UNDERLINE)) {
             txt.setUnderline();
@@ -46,7 +50,7 @@ public abstract class AbstractPDFCreator {
         cell.add(para);
         table.addCell(cell);
     }
-
+    @Override
     public void addEmptyRow(Table table, int cellsPerRow) {
         for(int i = 0; i < cellsPerRow; i++) {
             Cell cell = new Cell();

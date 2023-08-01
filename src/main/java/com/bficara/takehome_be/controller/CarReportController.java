@@ -34,13 +34,16 @@ public class CarReportController {
     // Services are injected here for generating reports and selecting data sources
     private final CarService carService;
     private final CarDatasourceService carDatasourceService;
+    private final CarPDFCreator carPDFCreator;
 
 
     // This constructor is using dependency injection to set the services
     @Autowired
-    public CarReportController(CarService carService, CarDatasourceService carDatasourceService) {
+    public CarReportController(CarService carService, CarDatasourceService carDatasourceService,
+                               CarPDFCreator carPDFCreator) {
         this.carService = carService;
         this.carDatasourceService = carDatasourceService;
+        this.carPDFCreator = carPDFCreator;
     }
 
     //datasource = CSV
@@ -61,8 +64,7 @@ public class CarReportController {
                     reportOptions.getSort(),
                     1.07
             );
-            CarPDFCreator pdf = new CarPDFCreator();
-            byte[] doc = pdf.createPdfToByteArray(cars, options);
+            byte[] doc = carPDFCreator.createPdfToByteArray(cars, options);
 
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_PDF);
@@ -86,9 +88,8 @@ public class CarReportController {
         dataSource.setFile(file);
         dataSource.processData();
         carService.setDataSource(dataSource);
-        CarPDFCreator pdf = new CarPDFCreator();
         List<Car> cars = carService.getAllByYear(year);
-        byte[] doc = pdf.createPdfToByteArray( cars, options);
+        byte[] doc = carPDFCreator.createPdfToByteArray( cars, options);
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_PDF);
         // Here you can set the name of the PDF that will be downloaded
@@ -110,9 +111,8 @@ public class CarReportController {
                 dataSource.setFile(file);
                 dataSource.processData();
                 carService.setDataSource(dataSource);
-                CarPDFCreator pdf = new CarPDFCreator();
                 List<Car> cars = carService.getAllByMake(make);
-                byte[] doc = pdf.createPdfToByteArray( cars, options);
+                byte[] doc = carPDFCreator.createPdfToByteArray( cars, options);
                 HttpHeaders headers = new HttpHeaders();
                 headers.setContentType(MediaType.APPLICATION_PDF);
                 // Here you can set the name of the PDF that will be downloaded
@@ -134,9 +134,8 @@ public class CarReportController {
         dataSource.setFile(file);
         dataSource.processData();
         carService.setDataSource(dataSource);
-        CarPDFCreator pdf = new CarPDFCreator();
         List<Car> cars = carService.getAllLessThanPrice(price);
-        byte[] doc = pdf.createPdfToByteArray( cars, options);
+        byte[] doc = carPDFCreator.createPdfToByteArray( cars, options);
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_PDF);
         // Here you can set the name of the PDF that will be downloaded
@@ -159,10 +158,9 @@ public class CarReportController {
             try {
                 // The data source is selected by the service, abstracting this complexity from the controller
                 ICarDataSource dataSource = carDatasourceService.getDataSource("h2");
-                CarPDFCreator pdf = new CarPDFCreator();
                 carService.setDataSource(dataSource);
                 List<Car> cars = carService.getAll();
-                byte[] data = pdf.createPdfToByteArray( cars, options);
+                byte[] data = carPDFCreator.createPdfToByteArray( cars, options);
                 ByteArrayResource resource = new ByteArrayResource(data);
                 // Building the response with the created PDF data
                 return ResponseEntity.ok()
@@ -187,9 +185,8 @@ public class CarReportController {
                 // The data source is selected by the service, abstracting this complexity from the controller
                 ICarDataSource dataSource = carDatasourceService.getDataSource("h2");
                 carService.setDataSource(dataSource);
-                CarPDFCreator pdf = new CarPDFCreator();
                 List<Car> cars = carService.getAllByYear(year);
-                byte[] data = pdf.createPdfToByteArray( cars, options);
+                byte[] data = carPDFCreator.createPdfToByteArray( cars, options);
                 ByteArrayResource resource = new ByteArrayResource(data);
                 // Building the response with the created PDF data
                 return ResponseEntity.ok()
@@ -211,9 +208,8 @@ public class CarReportController {
                 // The data source is selected by the service, abstracting this complexity from the controller
                 ICarDataSource dataSource = carDatasourceService.getDataSource("h2");
                 carService.setDataSource(dataSource);
-                CarPDFCreator pdf = new CarPDFCreator();
                 List<Car> cars = carService.getAllByMake(make);
-                byte[] data = pdf.createPdfToByteArray( cars, options);
+                byte[] data = carPDFCreator.createPdfToByteArray( cars, options);
                 ByteArrayResource resource = new ByteArrayResource(data);
                 // Building the response with the created PDF data
                 return ResponseEntity.ok()
@@ -235,9 +231,8 @@ public class CarReportController {
                 // The data source is selected by the service, abstracting this complexity from the controller
                 ICarDataSource dataSource = carDatasourceService.getDataSource("h2");
                 carService.setDataSource(dataSource);
-                CarPDFCreator pdf = new CarPDFCreator();
                 List<Car> cars = carService.getAllLessThanPrice(price);
-                byte[] data = pdf.createPdfToByteArray( cars, options);
+                byte[] data = carPDFCreator.createPdfToByteArray( cars, options);
                 ByteArrayResource resource = new ByteArrayResource(data);
                 // Building the response with the created PDF data
                 return ResponseEntity.ok()
@@ -256,8 +251,7 @@ public class CarReportController {
     //datasource = filesystem
     //todo
 
-
-    //Insert (via CSV) and Delete for Database
+//Insert (via CSV) and Delete for Database
     @PostMapping("/h2/insertCsv")
     public ResponseEntity<String> InsertCsvToH2(@RequestParam("file") MultipartFile file) {
 
@@ -288,7 +282,7 @@ public class CarReportController {
         return ResponseEntity.ok().body("Success");
     }
 
-    //endpoints for populating select elements on the front-end
+//endpoints for populating select elements on the front-end
     @GetMapping("/h2/Car/makeOptions")
     public Map<String, List<String>> getMakeOptions() {
         H2CarRepository repo = (H2CarRepository) carDatasourceService.getDataSource("h2");

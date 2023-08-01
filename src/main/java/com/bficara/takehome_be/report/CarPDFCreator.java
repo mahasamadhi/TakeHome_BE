@@ -11,16 +11,23 @@ import com.itextpdf.layout.borders.Border;
 import com.itextpdf.layout.element.Cell;
 import com.itextpdf.layout.element.Paragraph;
 import com.itextpdf.layout.element.Table;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
-public class CarPDFCreator extends AbstractPDFCreator {
+public class CarPDFCreator {
+
+    private final PDFCreatorImpl pdfCreator;
+
+    @Autowired
+    public CarPDFCreator(PDFCreatorImpl pdfCreator) {
+        this.pdfCreator = pdfCreator;
+    }
 
 
     public byte[] createPdfToByteArray(List<Car> cars, PdfReportOptions options) throws Exception {
@@ -31,8 +38,8 @@ public class CarPDFCreator extends AbstractPDFCreator {
         Document document = new Document(pdf);
 
         //add title and date
-        addTitle(document, options);
-        addDate(document, options);
+        pdfCreator.addTitle(document, options);
+        pdfCreator.addDate(document, options);
         //add price (msrp + tax)
         addPrice(cars, options.getTaxRate());
 
@@ -43,14 +50,14 @@ public class CarPDFCreator extends AbstractPDFCreator {
         switch (groupBy) {
             case YEAR:
                 AddCarColumnNames(table, "Year");
-                addEmptyRow(table, numColumns * 2);
+                pdfCreator.addEmptyRow(table, numColumns * 2);
                 Map<Integer, List<Car>> carMap = groupByYear(cars,options.getSortDir());
                 fillPdfByYear(carMap, table, numColumns);
                 break;
 
             case MAKE:
                 AddCarColumnNames(table, "Make");
-                addEmptyRow(table, numColumns * 2);
+                pdfCreator.addEmptyRow(table, numColumns * 2);
                 Map<String, List<Car>> carMapMake = groupByMake(cars, options.getSortDir());
                 fillPdfByMake(carMapMake, table, numColumns);
                 break;
@@ -124,7 +131,7 @@ public class CarPDFCreator extends AbstractPDFCreator {
             List<Car> carsByMake = entry.getValue();
 
             AddHeaderRow(table, make, numColumns);
-            addEmptyRow(table, numColumns);
+            pdfCreator.addEmptyRow(table, numColumns);
 
             for (Car car : carsByMake) {
                 // Create a blank cell
@@ -189,16 +196,16 @@ public class CarPDFCreator extends AbstractPDFCreator {
 
         PdfFont font = PdfFontFactory.createFont(StandardFonts.TIMES_ITALIC);
         if (groupBy.equals("Year")) {
-            addCellToTable(table, "Year", font, 16, CellTypeOption.UNDERLINE);
-            addCellToTable(table, "Make", font, 16, CellTypeOption.UNDERLINE);
+            pdfCreator.addCellToTable(table, "Year", font, 16, CellTypeOption.UNDERLINE);
+            pdfCreator.addCellToTable(table, "Make", font, 16, CellTypeOption.UNDERLINE);
         } else if (groupBy.equals("Make")) {
-            addCellToTable(table, "Make", font, 16, CellTypeOption.UNDERLINE);
-            addCellToTable(table, "Year", font, 16, CellTypeOption.UNDERLINE);
+            pdfCreator.addCellToTable(table, "Make", font, 16, CellTypeOption.UNDERLINE);
+            pdfCreator.addCellToTable(table, "Year", font, 16, CellTypeOption.UNDERLINE);
 
         }
-        addCellToTable(table, "Model", font, 16, CellTypeOption.UNDERLINE);
-        addCellToTable(table, "MSRP", font, 16, CellTypeOption.UNDERLINE);
-        addCellToTable(table, "Price", font, 16, CellTypeOption.UNDERLINE);
+        pdfCreator.addCellToTable(table, "Model", font, 16, CellTypeOption.UNDERLINE);
+        pdfCreator.addCellToTable(table, "MSRP", font, 16, CellTypeOption.UNDERLINE);
+        pdfCreator.addCellToTable(table, "Price", font, 16, CellTypeOption.UNDERLINE);
 
         return table;
     }
@@ -237,4 +244,5 @@ public class CarPDFCreator extends AbstractPDFCreator {
 
 
     }
+
 }

@@ -8,7 +8,9 @@ import com.itextpdf.layout.element.Table;
 public interface PDFCreator {
     void addTitle(Document document, PdfReportOptions options) throws IOException, java.io.IOException;
     void addDate(Document document, PdfReportOptions options);
-    void addCellToTable(Table table, String text, PdfFont font, int fontSize, CellTypeOption cellTypeOption);
+
+    void addCellToTable(Table table, String text, PdfFont font, int fontSize, CellTypeOption cellType) throws java.io.IOException;
+
     void addEmptyRow(Table table, int number);
     // Include any other methods you want to use from AbstractPDFCreator...
 }
