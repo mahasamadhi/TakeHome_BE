@@ -2,10 +2,10 @@ package com.bficara.takehome_be.tools;
 
 public class PdfReportOptions {
 
-        public PdfReportOptions(boolean includeDate, String title, String orderByColumn, GroupByOption groupBy, String sortDir, double taxRate) {
+        public PdfReportOptions(boolean includeDate, String title, GroupByOption groupBy, String sortDir, double taxRate) {
             this.includeDate = includeDate;
             this.title = title;
-            this.orderByColumn = orderByColumn;
+
             this.groupBy = groupBy;
             this.taxRate = taxRate;
             this.sortDir = sortDir;
@@ -14,7 +14,6 @@ public class PdfReportOptions {
 
         private boolean includeDate;
         private String title;
-        private String orderByColumn;
         private GroupByOption groupBy;
         private double taxRate;
         private String sortDir;
@@ -57,13 +56,6 @@ public class PdfReportOptions {
             this.title = title;
         }
 
-        public String getOrderByColumn() {
-            return orderByColumn;
-        }
-
-        public void setOrderByColumn(String orderByColumn) {
-            this.orderByColumn = orderByColumn;
-        }
 
     }
 
