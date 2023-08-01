@@ -44,8 +44,11 @@ public class CarReportController {
         this.carDatasourceService = carDatasourceService;
     }
 
-    @PostMapping("/report/csvToPdf/byYear")
-    public ResponseEntity<byte[]> GetCsvCarReportByYear(@RequestParam("file") MultipartFile file) {
+    // GROUP BY YEAR AND MAKE
+
+        //datasource = CSV
+    @PostMapping("/report/csv/groupByYear/{sort}")
+    public ResponseEntity<byte[]> GetCsvCarReportByYear(@RequestParam("file") MultipartFile file,@PathVariable String sort) {
 
         try {
             CsvCarDataSource dataSource = (CsvCarDataSource) carDatasourceService.getDataSource("csv");
@@ -54,8 +57,7 @@ public class CarReportController {
             carService.setDataSource(dataSource);
             List<Car> cars = carService.getAll();
             PdfReportOptions options = new PdfReportOptions(
-                    true, "Car List by Year","year", GroupByOption.YEAR, 1.07);
-            Collections.sort(cars, Comparator.comparing(Car::getYear));
+                    true, "Car List by Year","year", GroupByOption.YEAR, sort,1.07);
             CarPDFCreator pdf = new CarPDFCreator();
             byte[] doc = pdf.createPdfToByteArray( cars, options);
 
@@ -69,8 +71,8 @@ public class CarReportController {
         }
     }
 
-    @PostMapping("/report/csvToPdf/byMake")
-    public ResponseEntity<byte[]> GetCsvCarReportByMake(@RequestParam("file") MultipartFile file) {
+    @PostMapping("/report/csv/groupByMake/{sort}")
+    public ResponseEntity<byte[]> GetCsvCarReportByMake(@RequestParam("file") MultipartFile file,@PathVariable String sort) {
 
         try {
             CsvCarDataSource dataSource = (CsvCarDataSource) carDatasourceService.getDataSource("csv");
@@ -79,8 +81,7 @@ public class CarReportController {
             carService.setDataSource(dataSource);
             List<Car> cars = carService.getAll();
             PdfReportOptions options = new PdfReportOptions(
-                    true,"Car List by Make","year", GroupByOption.MAKE,1.07);
-            Collections.sort(cars, Comparator.comparing(Car::getYear));
+                    true,"Car List by Make","year", GroupByOption.MAKE,sort,1.07);
             CarPDFCreator pdf = new CarPDFCreator();
             byte[] doc = pdf.createPdfToByteArray( cars, options);
 
@@ -93,6 +94,60 @@ public class CarReportController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage().getBytes());
         }
     }
+
+    //datasource = H2
+    @GetMapping("/report/h2/groupByYear/{sort}")
+    public ResponseEntity<ByteArrayResource> getCarReportByYear(@PathVariable String sort) {
+        PdfReportOptions options = new PdfReportOptions(
+                true, "Car Details", "year", GroupByOption.YEAR,sort,1.07);
+        try {
+            // The data source is selected by the service, abstracting this complexity from the controller
+            ICarDataSource dataSource = carDatasourceService.getDataSource("h2");
+            CarPDFCreator pdf = new CarPDFCreator();
+            carService.setDataSource(dataSource);
+            List<Car> cars = carService.getAll();
+            byte[] data = pdf.createPdfToByteArray( cars, options);
+            ByteArrayResource resource = new ByteArrayResource(data);
+            // Building the response with the created PDF data
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename=car_report_all" + ".pdf")
+                    .contentType(MediaType.APPLICATION_PDF)
+                    .contentLength(data.length)
+                    .body(resource);
+
+        } catch (Exception e) {
+            // If any error occurs, print the stack trace and return a 500 status code
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
+    }
+    @GetMapping("/report/h2/groupByMake/{sort}")
+    public ResponseEntity<ByteArrayResource> getH2CarReportByMake(@PathVariable String sort) {
+        PdfReportOptions options = new PdfReportOptions(
+                true, "Car Details", "year", GroupByOption.MAKE,sort,1.07);
+        try {
+            // The data source is selected by the service, abstracting this complexity from the controller
+            ICarDataSource dataSource = carDatasourceService.getDataSource("h2");
+            CarPDFCreator pdf = new CarPDFCreator();
+            carService.setDataSource(dataSource);
+            List<Car> cars = carService.getAll();
+            byte[] data = pdf.createPdfToByteArray( cars, options);
+            ByteArrayResource resource = new ByteArrayResource(data);
+            // Building the response with the created PDF data
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename=car_report_all" + ".pdf")
+                    .contentType(MediaType.APPLICATION_PDF)
+                    .contentLength(data.length)
+                    .body(resource);
+        } catch (Exception e) {
+            // If any error occurs, print the stack trace and return a 500 status code
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
+    }
+
+    //datasource = filesystem
+    //todo
 
     @PostMapping("/h2/insertCsv")
     public ResponseEntity<String> InsertCsvToH2(@RequestParam("file") MultipartFile file) {
@@ -129,7 +184,7 @@ public class CarReportController {
     @GetMapping("/report/h2/year/{year}")
     public ResponseEntity<ByteArrayResource> getH2ReportByYear(@PathVariable int year) {
         PdfReportOptions options = new PdfReportOptions(
-                true, "Car List by Year", "year", GroupByOption.YEAR,1.07);
+                true, "Car List by Year", "year", GroupByOption.YEAR,"asc",1.07);
         try {
             // The data source is selected by the service, abstracting this complexity from the controller
             ICarDataSource dataSource = carDatasourceService.getDataSource("h2");
@@ -152,62 +207,9 @@ public class CarReportController {
     }
 
     // Endpoint for generating a report based on CSV data on the filesystem
+    //todo
 
-    //get all from H2 database
-    @GetMapping("/report/h2/groupByYear")
-    public ResponseEntity<ByteArrayResource> getCarReportByYear() {
-        PdfReportOptions options = new PdfReportOptions(
-                true, "Car Details", "year", GroupByOption.YEAR,1.07);
-        try {
-            // The data source is selected by the service, abstracting this complexity from the controller
-            ICarDataSource dataSource = carDatasourceService.getDataSource("h2");
-            CarPDFCreator pdf = new CarPDFCreator();
-            carService.setDataSource(dataSource);
-            List<Car> cars = carService.getAll();
-            // sort the car list by year
-            Collections.sort(cars, Comparator.comparing(Car::getYear));
-            byte[] data = pdf.createPdfToByteArray( cars, options);
-            ByteArrayResource resource = new ByteArrayResource(data);
-            // Building the response with the created PDF data
-            return ResponseEntity.ok()
-                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename=car_report_all" + ".pdf")
-                    .contentType(MediaType.APPLICATION_PDF)
-                    .contentLength(data.length)
-                    .body(resource);
 
-        } catch (Exception e) {
-            // If any error occurs, print the stack trace and return a 500 status code
-            e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
-        }
-    }
-
-    @GetMapping("/report/h2/groupByMake")
-    public ResponseEntity<ByteArrayResource> getH2CarReportByMake() {
-        PdfReportOptions options = new PdfReportOptions(
-                true, "Car Details", "year", GroupByOption.MAKE,1.07);
-        try {
-            // The data source is selected by the service, abstracting this complexity from the controller
-            ICarDataSource dataSource = carDatasourceService.getDataSource("h2");
-            CarPDFCreator pdf = new CarPDFCreator();
-            carService.setDataSource(dataSource);
-            List<Car> cars = carService.getAll();
-            // sort the car list by year
-            Collections.sort(cars, Comparator.comparing(Car::getYear));
-            byte[] data = pdf.createPdfToByteArray( cars, options);
-            ByteArrayResource resource = new ByteArrayResource(data);
-            // Building the response with the created PDF data
-            return ResponseEntity.ok()
-                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename=car_report_all" + ".pdf")
-                    .contentType(MediaType.APPLICATION_PDF)
-                    .contentLength(data.length)
-                    .body(resource);
-        } catch (Exception e) {
-            // If any error occurs, print the stack trace and return a 500 status code
-            e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
-        }
-    }
 
     @GetMapping("/h2/Car/makeOptions")
     public Map<String, List<String>> getMakeOptions() {
@@ -225,7 +227,7 @@ public class CarReportController {
         try {
             //Class to create pdfs using iText package
             PdfReportOptions options = new PdfReportOptions(
-                    true, "Car List", "year",GroupByOption.YEAR,1.07);
+                    true, "Car List", "year",GroupByOption.YEAR,"asc",1.07);
             CarPDFCreator pdf = new CarPDFCreator();
             // The CSV data source is selected here
             ICarDataSource dataSource = carDatasourceService.getDataSource("csv");

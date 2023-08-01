@@ -16,8 +16,7 @@ import org.springframework.stereotype.Service;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.lang.reflect.Field;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -32,28 +31,28 @@ public class CarPDFCreator extends AbstractPDFCreator {
         Document document = new Document(pdf);
 
         //add title and date
-        addTitle(document,options);
-        addDate(document,options);
+        addTitle(document, options);
+        addDate(document, options);
         //add price (msrp + tax)
         addPrice(cars, options.getTaxRate());
 
-        float [] pointColumnWidths = {100F, 100F, 100F, 100F, 100F};
+        float[] pointColumnWidths = {100F, 100F, 100F, 100F, 100F};
         Table table = new Table(pointColumnWidths);
         int numColumns = pointColumnWidths.length;
 
         switch (groupBy) {
             case YEAR:
-                AddCarColumnNames(table,"Year");
-                addEmptyRow(table, numColumns*2);
-                Map<Integer, List<Car>> carMap = groupByYear(cars);
-                fillPdfByYear(carMap,table,numColumns);
+                AddCarColumnNames(table, "Year");
+                addEmptyRow(table, numColumns * 2);
+                Map<Integer, List<Car>> carMap = groupByYear(cars,options.getSortDir());
+                fillPdfByYear(carMap, table, numColumns);
                 break;
 
             case MAKE:
-                AddCarColumnNames(table,"Make");
-                addEmptyRow(table,numColumns*2);
-                Map<String, List<Car>> carMapMake = groupByMake(cars);
-                fillPdfByMake(carMapMake,table,numColumns);
+                AddCarColumnNames(table, "Make");
+                addEmptyRow(table, numColumns * 2);
+                Map<String, List<Car>> carMapMake = groupByMake(cars, options.getSortDir());
+                fillPdfByMake(carMapMake, table, numColumns);
                 break;
 
             default:
@@ -68,8 +67,8 @@ public class CarPDFCreator extends AbstractPDFCreator {
     }
 
     public void addPrice(List<Car> cars, double taxRate) {
-        for (Car car:cars) {
-            double price = taxRate * car.getMsrp() ;
+        for (Car car : cars) {
+            double price = taxRate * car.getMsrp();
             price = Math.round(price * 100.0) / 100.0;
             car.setPrice(price);
         }
@@ -124,8 +123,8 @@ public class CarPDFCreator extends AbstractPDFCreator {
             String make = entry.getKey();
             List<Car> carsByMake = entry.getValue();
 
-            AddHeaderRow(table, make,numColumns);
-            addEmptyRow(table,numColumns);
+            AddHeaderRow(table, make, numColumns);
+            addEmptyRow(table, numColumns);
 
             for (Car car : carsByMake) {
                 // Create a blank cell
@@ -162,7 +161,7 @@ public class CarPDFCreator extends AbstractPDFCreator {
         return table;
     }
 
-    public Table AddHeaderRow(Table table,String groupByValue,int numColumns) throws IOException {
+    public Table AddHeaderRow(Table table, String groupByValue, int numColumns) throws IOException {
 
         Paragraph para = new Paragraph(groupByValue);
         PdfFont font = PdfFontFactory.createFont(StandardFonts.COURIER);
@@ -178,7 +177,7 @@ public class CarPDFCreator extends AbstractPDFCreator {
         Cell emptyCell = new Cell();
         emptyCell.setBorder(Border.NO_BORDER);
         emptyCell.add(emptyPara);
-        for (int i = 1; i< numColumns; i++) {
+        for (int i = 1; i < numColumns; i++) {
             table.addCell(emptyCell);
         }
 
@@ -188,31 +187,54 @@ public class CarPDFCreator extends AbstractPDFCreator {
 
     public Table AddCarColumnNames(Table table, String groupBy) throws IOException {
 
-            PdfFont font = PdfFontFactory.createFont(StandardFonts.TIMES_ITALIC);
-            if (groupBy.equals("Year")) {
-                addCellToTable(table, "Year", font, 16, CellTypeOption.UNDERLINE);
-                addCellToTable(table, "Make", font, 16, CellTypeOption.UNDERLINE);
-            } else if (groupBy.equals("Make")) {
-                addCellToTable(table, "Make", font, 16, CellTypeOption.UNDERLINE);
-                addCellToTable(table, "Year", font, 16, CellTypeOption.UNDERLINE);
+        PdfFont font = PdfFontFactory.createFont(StandardFonts.TIMES_ITALIC);
+        if (groupBy.equals("Year")) {
+            addCellToTable(table, "Year", font, 16, CellTypeOption.UNDERLINE);
+            addCellToTable(table, "Make", font, 16, CellTypeOption.UNDERLINE);
+        } else if (groupBy.equals("Make")) {
+            addCellToTable(table, "Make", font, 16, CellTypeOption.UNDERLINE);
+            addCellToTable(table, "Year", font, 16, CellTypeOption.UNDERLINE);
 
-            }
-            addCellToTable(table, "Model", font, 16, CellTypeOption.UNDERLINE);
-            addCellToTable(table, "MSRP", font, 16, CellTypeOption.UNDERLINE);
-            addCellToTable(table, "Price", font, 16, CellTypeOption.UNDERLINE);
+        }
+        addCellToTable(table, "Model", font, 16, CellTypeOption.UNDERLINE);
+        addCellToTable(table, "MSRP", font, 16, CellTypeOption.UNDERLINE);
+        addCellToTable(table, "Price", font, 16, CellTypeOption.UNDERLINE);
 
         return table;
     }
 
 
-    public Map<String, List<Car>> groupByMake(List<Car> carList) {
-        return carList.stream()
-                .collect(Collectors.groupingBy(Car::getMake));
+    public TreeMap<String, List<Car>> groupByMake(List<Car> carList, String order) {
+        if (order.equals("asc")) {
+            return carList.stream()
+                    .collect(Collectors.groupingBy(
+                            Car::getMake,
+                            TreeMap::new, // Collector will use a TreeMap
+                            Collectors.toList())); // Collector for values
+        } else {
+            return carList.stream()
+                    .collect(Collectors.groupingBy(
+                            Car::getMake,
+                            () -> new TreeMap<>(Comparator.reverseOrder()), // TreeMap with reverse order comparator
+                            Collectors.toList()));
+        }
     }
 
-    public Map<Integer, List<Car>> groupByYear(List<Car> carList) {
-        return carList.stream()
-                .collect(Collectors.groupingBy(Car::getYear));
-    }
+    public TreeMap<Integer, List<Car>> groupByYear(List<Car> carList, String order) {
+        if (order.equals("asc")) {
+            return carList.stream()
+                    .collect(Collectors.groupingBy(
+                            Car::getYear,
+                            TreeMap::new, // Collector will use a TreeMap
+                            Collectors.toList())); // Collector for values
+        } else {
+            return carList.stream()
+                    .collect(Collectors.groupingBy(
+                            Car::getYear,
+                            () -> new TreeMap<>(Comparator.reverseOrder()), // TreeMap with reverse order comparator
+                            Collectors.toList()));
+        }
 
+
+    }
 }
