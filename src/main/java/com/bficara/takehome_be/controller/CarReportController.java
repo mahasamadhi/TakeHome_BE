@@ -21,6 +21,7 @@ import com.bficara.takehome_be.tools.PdfReportOptions;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 
 // This is the main controller class that handles car report-related requests
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -208,6 +209,17 @@ public class CarReportController {
         }
     }
 
+    @GetMapping("/h2/Car/makeOptions")
+    public Map<String, List<String>> getMakeOptions() {
+        H2CarRepository repo = (H2CarRepository) carDatasourceService.getDataSource("h2");
+        return repo.getMakeOptions();
+    }
+
+    @GetMapping("/h2/Car/yearOptions")
+    public Map<String, List<String>> getYearOptions() {
+        H2CarRepository repo = (H2CarRepository) carDatasourceService.getDataSource("h2");
+        return repo.getYearOptions();
+    }
     @GetMapping("/report/csv")
     public ResponseEntity<ByteArrayResource> getCsvCarReportbyYear() {
         try {

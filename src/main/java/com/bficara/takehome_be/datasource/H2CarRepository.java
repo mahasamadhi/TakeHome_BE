@@ -5,10 +5,12 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
-@Repository
+@Repository("h2CarRepository")
 public class H2CarRepository implements ICarDataSource {
 
     private final JdbcTemplate jdbcTemplate;
@@ -40,6 +42,27 @@ public class H2CarRepository implements ICarDataSource {
         RowMapper<Car> mapper = getCarRowMapper();
         return jdbcTemplate.query(sql, mapper, make);
     }
+
+    public Map<String, List<String>> getMakeOptions() {
+        String sql = "SELECT distinct make FROM car";
+        List<String> makes = jdbcTemplate.queryForList(sql, String.class);
+
+        Map<String, List<String>> result = new HashMap<>();
+        result.put("makeOptions", makes);
+
+        return result;
+    }
+
+    public Map<String, List<String>> getYearOptions() {
+        String sql = "SELECT distinct caryear FROM car";
+        List<String> years = jdbcTemplate.queryForList(sql, String.class);
+
+        Map<String, List<String>> result = new HashMap<>();
+        result.put("yearOptions", years);
+
+        return result;
+    }
+
 
     private RowMapper<Car> getCarRowMapper() {
         return (rs, rowNum) -> new Car(

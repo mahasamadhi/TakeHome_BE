@@ -13,9 +13,7 @@ import java.util.List;
 public class FilesystemDataSource implements ICarDataSource {
     private final String filePath = "C:\\pProjects\\problem\\TakeHome_BE\\pdfInput\\data.csv";
 
- // assuming csv.file.path is set in your application.properties
     public FilesystemDataSource() {
-//        this.csvFilePath = csvFilePath;
     }
 
     @Override
