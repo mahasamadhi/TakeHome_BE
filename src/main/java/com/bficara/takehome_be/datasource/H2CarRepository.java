@@ -43,6 +43,13 @@ public class H2CarRepository implements ICarDataSource {
         return jdbcTemplate.query(sql, mapper, make);
     }
 
+    @Override
+    public List<Car> getAllLessThanPrice(int price) {
+        String sql = "SELECT * FROM car where msrp < ?";
+
+        RowMapper<Car> mapper = getCarRowMapper();
+        return jdbcTemplate.query(sql, mapper, price);
+    }
     public Map<String, List<String>> getMakeOptions() {
         String sql = "SELECT distinct make FROM car";
         List<String> makes = jdbcTemplate.queryForList(sql, String.class);

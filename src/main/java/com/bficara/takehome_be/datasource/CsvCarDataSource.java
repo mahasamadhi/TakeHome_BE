@@ -79,6 +79,13 @@ public class CsvCarDataSource implements ICarDataSource {
     }
 
     @Override
+    public List<Car> getAllLessThanPrice(int price) {
+        return carList.stream()
+                .filter(car -> car.getMsrp() < price)
+                .collect(Collectors.toList());
+    }
+
+    @Override
     public List<Car> getAllByMake(String make) {
         List<Car> cars = new ArrayList<>();
 

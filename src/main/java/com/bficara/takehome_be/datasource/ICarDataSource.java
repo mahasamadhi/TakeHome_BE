@@ -9,4 +9,5 @@ public interface ICarDataSource {
     List<Car> getAll();
     List<Car> getAllByYear(int year);
     List<Car> getAllByMake(String make);
+    List<Car> getAllLessThanPrice(int price);
 }

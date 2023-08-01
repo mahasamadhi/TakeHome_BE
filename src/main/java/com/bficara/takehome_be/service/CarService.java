@@ -29,6 +29,14 @@ public class CarService {
             return dataSource.getAllByYear(year);
         }
 
+    public List<Car> getAllByMake(String make) {
+        return dataSource.getAllByMake(make);
+    }
+
+    public List<Car> getAllLessThanPrice(int price) {
+        return dataSource.getAllLessThanPrice(price);
+    }
+
 
 
 
