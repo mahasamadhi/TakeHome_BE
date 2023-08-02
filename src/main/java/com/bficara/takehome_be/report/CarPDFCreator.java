@@ -243,21 +243,8 @@ public class CarPDFCreator {
     }
 
     public TreeMap<Integer, List<Car>> groupByYear(List<Car> carList, String order) {
-        final boolean isDesc = order.equals("desc");
-        if (isDesc) {
-            return carList.stream()
-                    .collect(Collectors.groupingBy(
-                            Car::getYear,
-                            () -> new TreeMap<>(Comparator.reverseOrder()),
-                            Collectors.collectingAndThen(
-                                    Collectors.toList(),
-                                    cars -> {
-                                        Comparator<Car> makeComparator = Comparator.comparing(Car::getMake).reversed();
-                                        return cars.stream().sorted(makeComparator).collect(Collectors.toList());
-                                    }
-                            )
-                    ));
-        } else {
+        final boolean isAsc = order.equals("asc");
+        if (isAsc) {
             return carList.stream()
                     .collect(Collectors.groupingBy(
                             Car::getYear,
@@ -266,6 +253,19 @@ public class CarPDFCreator {
                                     Collectors.toList(),
                                     cars -> {
                                         Comparator<Car> makeComparator = Comparator.comparing(Car::getMake);
+                                        return cars.stream().sorted(makeComparator).collect(Collectors.toList());
+                                    }
+                            )
+                    ));
+        } else {
+            return carList.stream()
+                    .collect(Collectors.groupingBy(
+                            Car::getYear,
+                            () -> new TreeMap<>(Comparator.reverseOrder()),
+                            Collectors.collectingAndThen(
+                                    Collectors.toList(),
+                                    cars -> {
+                                        Comparator<Car> makeComparator = Comparator.comparing(Car::getMake).reversed();
                                         return cars.stream().sorted(makeComparator).collect(Collectors.toList());
                                     }
                             )
