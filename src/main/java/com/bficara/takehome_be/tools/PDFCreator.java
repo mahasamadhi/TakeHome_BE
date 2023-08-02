@@ -12,5 +12,4 @@ public interface PDFCreator {
     void addCellToTable(Table table, String text, PdfFont font, int fontSize, CellTypeOption cellType) throws java.io.IOException;
 
     void addEmptyRow(Table table, int number);
-    // Include any other methods you want to use from AbstractPDFCreator...
 }

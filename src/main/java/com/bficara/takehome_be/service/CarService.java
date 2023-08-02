@@ -3,10 +3,7 @@ package com.bficara.takehome_be.service;
 import com.bficara.takehome_be.datasource.ICarDataSource;
 import com.bficara.takehome_be.model.Car;
 import org.springframework.stereotype.Service;
-
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 @Service
 public class CarService {

@@ -31,21 +31,26 @@ public class CarPDFCreator {
 
 
     public byte[] createPdfToByteArray(List<Car> cars, PdfReportOptions options) throws Exception {
+        //declare and initialize variables
         GroupByOption groupBy = options.getGroupBy();
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         PdfWriter writer = new PdfWriter(byteArrayOutputStream);
         PdfDocument pdf = new PdfDocument(writer);
         Document document = new Document(pdf);
 
-        //add title and date
-        pdfCreator.addTitle(document, options);
-        pdfCreator.addDate(document, options);
-        //add price (msrp + tax)
-        addPrice(cars, options.getTaxRate());
 
+        //create the main element of the PDF, the table
         float[] pointColumnWidths = {100F, 100F, 100F, 100F, 100F};
         Table table = new Table(pointColumnWidths);
         int numColumns = pointColumnWidths.length;
+
+        //add title and date
+        pdfCreator.addTitle(document, options);
+        pdfCreator.addDate(document, options);
+
+        //add price (msrp + tax)
+        addPrice(cars, options.getTaxRate());
+
 
         switch (groupBy) {
             case YEAR:
@@ -63,7 +68,6 @@ public class CarPDFCreator {
                 break;
 
             default:
-                // You might want to throw an exception or handle the default case differently.
                 throw new IllegalArgumentException("Invalid groupBy value: " + groupBy);
         }
 
@@ -83,6 +87,7 @@ public class CarPDFCreator {
 
     public Table fillPdfByYear(Map<Integer, List<Car>> carMap, Table table, int numColumns) throws IOException {
 
+        //for each entry in the map (a car year) append the rest of the details within the Car list (make,model,price)
         for (Map.Entry<Integer, List<Car>> entry : carMap.entrySet()) {
             int year = entry.getKey();
             String strYear = String.valueOf(year);
@@ -125,7 +130,7 @@ public class CarPDFCreator {
     }
 
     public Table fillPdfByMake(Map<String, List<Car>> carMap, Table table, int numColumns) throws IOException {
-
+        //for each entry in the map (a car make) append the rest of the details within the Car list (year,model,price)
         for (Map.Entry<String, List<Car>> entry : carMap.entrySet()) {
             String make = entry.getKey();
             List<Car> carsByMake = entry.getValue();
@@ -169,7 +174,7 @@ public class CarPDFCreator {
     }
 
     public Table AddHeaderRow(Table table, String groupByValue, int numColumns) throws IOException {
-
+        //add the first row of the pdf grouped by year or make, creating a visually nested grouping below
         Paragraph para = new Paragraph(groupByValue);
         PdfFont font = PdfFontFactory.createFont(StandardFonts.COURIER);
         para.setFontSize(14);
@@ -193,7 +198,7 @@ public class CarPDFCreator {
 
 
     public Table AddCarColumnNames(Table table, String groupBy) throws IOException {
-
+        //add the column names at the top of the table depending on the type of report
         PdfFont font = PdfFontFactory.createFont(StandardFonts.TIMES_ITALIC);
         if (groupBy.equals("Year")) {
             pdfCreator.addCellToTable(table, "Year", font, 16, CellTypeOption.UNDERLINE);
@@ -212,15 +217,26 @@ public class CarPDFCreator {
 
 
     public TreeMap<String, List<Car>> groupByMake(List<Car> carList, String order) {
+        //all of the sorting and grouping logic happens here
         final boolean isAsc = order.equals("asc");
         if (isAsc) {
+            //creates a stream from the List<Car> input so operations can be performed on it's data
             return carList.stream()
-                    .collect(Collectors.groupingBy(
+                    //collects the result of the operations within, which in this case is a TreeMap<String, List<Car>>
+                    .collect(
+                            //method within the Java Collections package that groups the input based on the supplied parameters
+                            Collectors.groupingBy(
+                            //the key that the group is mapped by, called the Classifier
                             Car::getMake,
-                            TreeMap::new, // Collector will use a TreeMap
+                            //the type of Map that the result is stored in
+                            TreeMap::new,
+                            //performs additional operations on the grouped List before it's stored in the Map
                             Collectors.collectingAndThen(
+                                    //collects the cars into a list
                                     Collectors.toList(),
+                                    //a function that performs operations on the list
                                     cars -> {
+                                        //for each car list, use the comparator to sort by year (default ascending)
                                         Comparator<Car> YearComparator = Comparator.comparing(Car::getYear);
                                         return cars.stream().sorted(YearComparator).collect(Collectors.toList());
                                     }

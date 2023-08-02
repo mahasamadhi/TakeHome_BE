@@ -5,7 +5,6 @@ import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVRecord;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Repository;
-import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.BufferedReader;
@@ -47,7 +46,6 @@ public class CsvCarDataSource implements ICarDataSource {
                     .withFirstRecordAsHeader()
                     .parse(reader);
         } catch (IOException e) {
-            // Consider throwing a custom exception here
             throw new RuntimeException("Error reading file", e);
         }
     }

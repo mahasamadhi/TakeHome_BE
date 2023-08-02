@@ -19,6 +19,7 @@ import com.bficara.takehome_be.tools.GroupByOption;
 import com.bficara.takehome_be.report.CarPDFCreator;
 import com.bficara.takehome_be.tools.PdfReportOptions;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -68,14 +69,12 @@ public class CarReportController {
 
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_PDF);
-            // Here you can set the name of the PDF that will be downloaded
-            headers.setContentDispositionFormData("filename", "report.pdf");
             return new ResponseEntity<>(doc, headers, HttpStatus.OK);
         } catch (Exception e) {
             System.out.println(e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage().getBytes());
+            }
         }
-    }
 
 
         //filtering
@@ -92,8 +91,6 @@ public class CarReportController {
         byte[] doc = carPDFCreator.createPdfToByteArray( cars, options);
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_PDF);
-        // Here you can set the name of the PDF that will be downloaded
-        headers.setContentDispositionFormData("filename", "report.pdf");
         return new ResponseEntity<>(doc, headers, HttpStatus.OK);
     } catch (Exception e) {
         // If any error occurs, print the stack trace and return a 500 status code
@@ -115,8 +112,6 @@ public class CarReportController {
                 byte[] doc = carPDFCreator.createPdfToByteArray( cars, options);
                 HttpHeaders headers = new HttpHeaders();
                 headers.setContentType(MediaType.APPLICATION_PDF);
-                // Here you can set the name of the PDF that will be downloaded
-                headers.setContentDispositionFormData("filename", "report.pdf");
                 return new ResponseEntity<>(doc, headers, HttpStatus.OK);
             } catch (Exception e) {
                 // If any error occurs, print the stack trace and return a 500 status code
@@ -127,26 +122,25 @@ public class CarReportController {
 
         @PostMapping("/report/csv/price/{price}/{sortDir}")
         public ResponseEntity<byte[]> AllByPriceCSV(@RequestParam("file") MultipartFile file, @PathVariable int price, @PathVariable String sortDir) {
-    PdfReportOptions options = new PdfReportOptions(
+        PdfReportOptions options = new PdfReportOptions(
             true, "Car List by Price", GroupByOption.MAKE,sortDir,1.07);
-    try {
-        CsvCarDataSource dataSource = (CsvCarDataSource) carDatasourceService.getDataSource("csv");
-        dataSource.setFile(file);
-        dataSource.processData();
-        carService.setDataSource(dataSource);
-        List<Car> cars = carService.getAllLessThanPrice(price);
-        byte[] doc = carPDFCreator.createPdfToByteArray( cars, options);
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_PDF);
-        // Here you can set the name of the PDF that will be downloaded
-        headers.setContentDispositionFormData("filename", "report.pdf");
-        return new ResponseEntity<>(doc, headers, HttpStatus.OK);
-    } catch (Exception e) {
-        // If any error occurs, print the stack trace and return a 500 status code
-        e.printStackTrace();
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
-    }
-}
+        try {
+            CsvCarDataSource dataSource = (CsvCarDataSource) carDatasourceService.getDataSource("csv");
+            dataSource.setFile(file);
+            dataSource.processData();
+            carService.setDataSource(dataSource);
+            List<Car> cars = carService.getAllLessThanPrice(price);
+            byte[] doc = carPDFCreator.createPdfToByteArray( cars, options);
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_PDF);
+            // Here you can set the name of the PDF that will be downloaded
+            return new ResponseEntity<>(doc, headers, HttpStatus.OK);
+        } catch (Exception e) {
+            // If any error occurs, print the stack trace and return a 500 status code
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+            }
+        }
 
     //datasource = H2
 
@@ -164,7 +158,6 @@ public class CarReportController {
                 ByteArrayResource resource = new ByteArrayResource(data);
                 // Building the response with the created PDF data
                 return ResponseEntity.ok()
-                        .header(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename=car_report_all" + ".pdf")
                         .contentType(MediaType.APPLICATION_PDF)
                         .contentLength(data.length)
                         .body(resource);
@@ -190,7 +183,6 @@ public class CarReportController {
                 ByteArrayResource resource = new ByteArrayResource(data);
                 // Building the response with the created PDF data
                 return ResponseEntity.ok()
-                        .header(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename=car_report_" + year + ".pdf")
                         .contentType(MediaType.APPLICATION_PDF)
                         .contentLength(data.length)
                         .body(resource);
@@ -213,7 +205,6 @@ public class CarReportController {
                 ByteArrayResource resource = new ByteArrayResource(data);
                 // Building the response with the created PDF data
                 return ResponseEntity.ok()
-                        .header(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename=car_report_" + make + ".pdf")
                         .contentType(MediaType.APPLICATION_PDF)
                         .contentLength(data.length)
                         .body(resource);
@@ -236,7 +227,6 @@ public class CarReportController {
                 ByteArrayResource resource = new ByteArrayResource(data);
                 // Building the response with the created PDF data
                 return ResponseEntity.ok()
-                        .header(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename=car_report_" + "<" + price + ".pdf")
                         .contentType(MediaType.APPLICATION_PDF)
                         .contentLength(data.length)
                         .body(resource);
@@ -247,51 +237,50 @@ public class CarReportController {
             }
         }
 
-
     //datasource = filesystem
     //todo
 
-//Insert (via CSV) and Delete for Database
-    @PostMapping("/h2/insertCsv")
-    public ResponseEntity<String> InsertCsvToH2(@RequestParam("file") MultipartFile file) {
+    //Insert (via CSV) and Delete for Database
+        @PostMapping("/h2/insertCsv")
+        public ResponseEntity<String> InsertCsvToH2(@RequestParam("file") MultipartFile file) {
 
-        try {
-            CsvCarDataSource dataSource = (CsvCarDataSource) carDatasourceService.getDataSource("csv");
-            dataSource.setFile(file);
-            dataSource.processData();
-            carService.setDataSource(dataSource);
-            List<Car> cars = carService.getAll();
+            try {
+                CsvCarDataSource dataSource = (CsvCarDataSource) carDatasourceService.getDataSource("csv");
+                dataSource.setFile(file);
+                dataSource.processData();
+                carService.setDataSource(dataSource);
+                List<Car> cars = carService.getAll();
 
-            // Inject H2CarRepository into your controller
-            H2CarRepository h2CarRepository = (H2CarRepository) carDatasourceService.getDataSource("h2");
+                // Inject H2CarRepository into your controller
+                H2CarRepository h2CarRepository = (H2CarRepository) carDatasourceService.getDataSource("h2");
 
-            // Save the cars into your H2 database
-            h2CarRepository.saveAll(cars);
+                // Save the cars into your H2 database
+                h2CarRepository.saveAll(cars);
 
-            return ResponseEntity.ok().body("Success");
+                return ResponseEntity.ok().body("Success");
 
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+            } catch (Exception e) {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+            }
         }
-    }
 
-    @DeleteMapping("/h2/deleteAll")
-    public ResponseEntity<String> deleteAllFromH2() {
-        H2CarRepository h2CarRepository = (H2CarRepository) carDatasourceService.getDataSource("h2");
-        h2CarRepository.deleteAll();
-        return ResponseEntity.ok().body("Success");
-    }
+        @DeleteMapping("/h2/deleteAll")
+        public ResponseEntity<String> deleteAllFromH2() {
+            H2CarRepository h2CarRepository = (H2CarRepository) carDatasourceService.getDataSource("h2");
+            h2CarRepository.deleteAll();
+            return ResponseEntity.ok().body("Success");
+        }
 
-//endpoints for populating select elements on the front-end
-    @GetMapping("/h2/Car/makeOptions")
-    public Map<String, List<String>> getMakeOptions() {
-        H2CarRepository repo = (H2CarRepository) carDatasourceService.getDataSource("h2");
-        return repo.getMakeOptions();
-    }
-    @GetMapping("/h2/Car/yearOptions")
-    public Map<String, List<String>> getYearOptions() {
-        H2CarRepository repo = (H2CarRepository) carDatasourceService.getDataSource("h2");
-        return repo.getYearOptions();
-    }
+    //endpoints for populating select elements on the front-end
+        @GetMapping("/h2/Car/makeOptions")
+        public Map<String, List<String>> getMakeOptions() {
+            H2CarRepository repo = (H2CarRepository) carDatasourceService.getDataSource("h2");
+            return repo.getMakeOptions();
+        }
+        @GetMapping("/h2/Car/yearOptions")
+        public Map<String, List<String>> getYearOptions() {
+            H2CarRepository repo = (H2CarRepository) carDatasourceService.getDataSource("h2");
+            return repo.getYearOptions();
+        }
 
 }

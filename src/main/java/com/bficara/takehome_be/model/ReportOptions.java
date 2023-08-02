@@ -31,7 +31,4 @@ public class ReportOptions {
         this.sort = sort;
     }
 
-
-
-    // getters and setters
 }
