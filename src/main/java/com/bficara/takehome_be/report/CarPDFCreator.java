@@ -51,14 +51,14 @@ public class CarPDFCreator {
             case YEAR:
                 AddCarColumnNames(table, "Year");
                 pdfCreator.addEmptyRow(table, numColumns * 2);
-                Map<Integer, List<Car>> carMap = groupByYear(cars,options.getSortDir());
+                Map<Integer, List<Car>> carMap = groupByYear(cars,options.getGroupSortDir());
                 fillPdfByYear(carMap, table, numColumns);
                 break;
 
             case MAKE:
                 AddCarColumnNames(table, "Make");
                 pdfCreator.addEmptyRow(table, numColumns * 2);
-                Map<String, List<Car>> carMapMake = groupByMake(cars, options.getSortDir());
+                Map<String, List<Car>> carMapMake = groupByMake(cars, options.getGroupSortDir());
                 fillPdfByMake(carMapMake, table, numColumns);
                 break;
 
@@ -212,36 +212,65 @@ public class CarPDFCreator {
 
 
     public TreeMap<String, List<Car>> groupByMake(List<Car> carList, String order) {
-        if (order.equals("asc")) {
+        final boolean isAsc = order.equals("asc");
+        if (isAsc) {
             return carList.stream()
                     .collect(Collectors.groupingBy(
                             Car::getMake,
                             TreeMap::new, // Collector will use a TreeMap
-                            Collectors.toList())); // Collector for values
+                            Collectors.collectingAndThen(
+                                    Collectors.toList(),
+                                    cars -> {
+                                        Comparator<Car> YearComparator = Comparator.comparing(Car::getYear);
+                                        return cars.stream().sorted(YearComparator).collect(Collectors.toList());
+                                    }
+                            )
+                        )
+                    );
         } else {
             return carList.stream()
                     .collect(Collectors.groupingBy(
                             Car::getMake,
                             () -> new TreeMap<>(Comparator.reverseOrder()), // TreeMap with reverse order comparator
-                            Collectors.toList()));
+                            Collectors.collectingAndThen(
+                                    Collectors.toList(),
+                                    cars -> {
+                                        Comparator<Car> YearComparator = Comparator.comparing(Car::getYear).reversed();
+                                        return cars.stream().sorted(YearComparator).collect(Collectors.toList());
+                                    }
+                            )));
         }
     }
 
     public TreeMap<Integer, List<Car>> groupByYear(List<Car> carList, String order) {
-        if (order.equals("asc")) {
+        final boolean isDesc = order.equals("desc");
+        if (isDesc) {
             return carList.stream()
                     .collect(Collectors.groupingBy(
                             Car::getYear,
-                            TreeMap::new, // Collector will use a TreeMap
-                            Collectors.toList())); // Collector for values
+                            () -> new TreeMap<>(Comparator.reverseOrder()),
+                            Collectors.collectingAndThen(
+                                    Collectors.toList(),
+                                    cars -> {
+                                        Comparator<Car> makeComparator = Comparator.comparing(Car::getMake).reversed();
+                                        return cars.stream().sorted(makeComparator).collect(Collectors.toList());
+                                    }
+                            )
+                    ));
         } else {
             return carList.stream()
                     .collect(Collectors.groupingBy(
                             Car::getYear,
-                            () -> new TreeMap<>(Comparator.reverseOrder()), // TreeMap with reverse order comparator
-                            Collectors.toList()));
+                            TreeMap::new,
+                            Collectors.collectingAndThen(
+                                    Collectors.toList(),
+                                    cars -> {
+                                        Comparator<Car> makeComparator = Comparator.comparing(Car::getMake);
+                                        return cars.stream().sorted(makeComparator).collect(Collectors.toList());
+                                    }
+                            )
+                    ));
         }
-
 
     }
 

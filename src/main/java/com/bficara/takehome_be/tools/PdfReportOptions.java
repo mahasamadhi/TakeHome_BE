@@ -2,28 +2,26 @@ package com.bficara.takehome_be.tools;
 
 public class PdfReportOptions {
 
-        public PdfReportOptions(boolean includeDate, String title, GroupByOption groupBy, String sortDir, double taxRate) {
+        public PdfReportOptions(boolean includeDate, String title, GroupByOption groupBy, String groupSortDir, double taxRate) {
             this.includeDate = includeDate;
             this.title = title;
-
             this.groupBy = groupBy;
+            this.groupSortDir = groupSortDir;
             this.taxRate = taxRate;
-            this.sortDir = sortDir;
         }
-
 
         private boolean includeDate;
         private String title;
         private GroupByOption groupBy;
         private double taxRate;
-        private String sortDir;
+        private String groupSortDir;
 
-    public String getSortDir() {
-        return sortDir;
+    public String getGroupSortDir() {
+        return groupSortDir;
     }
 
-    public void setSortDir(String sortDir) {
-        this.sortDir = sortDir;
+    public void setGroupSortDir(String groupSortDir) {
+        this.groupSortDir = groupSortDir;
     }
 
     public GroupByOption  getGroupBy() {
