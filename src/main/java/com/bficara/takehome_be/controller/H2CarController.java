@@ -27,7 +27,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @CrossOrigin(origins = "*")
 @RestController
-@RequestMapping("/h2/")
+@RequestMapping("/reportapi/h2/")
 public class H2CarController {
 
     // Services are injected here for generating reports and selecting data sources
@@ -69,7 +69,6 @@ public class H2CarController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
-
 
     //filtering
     @GetMapping("report/year/{year}/{sortDir}")

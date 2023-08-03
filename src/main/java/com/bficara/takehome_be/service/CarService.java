@@ -21,6 +21,10 @@ public class CarService {
         this.dataSource = ds;
     }
 
+    public ICarDataSource getDataSource() {
+        return this.dataSource;
+    }
+
     public List<Car> getAll() {
         return dataSource.getAll();
     }

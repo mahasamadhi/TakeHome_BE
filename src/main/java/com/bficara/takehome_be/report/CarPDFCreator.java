@@ -53,7 +53,7 @@ public class CarPDFCreator {
 
 
         switch (groupBy) {
-            case YEAR:
+            case YEAR, PRICE:
                 AddCarColumnNames(table, "Year");
                 pdfCreator.addEmptyRow(table, numColumns * 2);
                 Map<Integer, List<Car>> carMap = groupByYear(cars,options.getGroupSortDir());

@@ -1,10 +1,13 @@
 package com.bficara.takehome_be.controller;
 
+import com.bficara.takehome_be.datasource.CsvCarDataSource;
 import com.bficara.takehome_be.model.Car;
+import com.bficara.takehome_be.model.ReportOptions;
 import com.bficara.takehome_be.service.CarService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.io.ByteArrayResource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -20,7 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @CrossOrigin(origins = "*")
 @RestController
-@RequestMapping("/report/fs")
+@RequestMapping("/reportapi/fs/")
 public class FsCarController {
     private final CarService carService;
     private final CarPDFCreator carPDFCreator;
@@ -34,7 +37,7 @@ public class FsCarController {
 
 
     //filtering
-    @GetMapping("/year/{year}/{sortDir}")
+    @GetMapping("report/year/{year}/{sortDir}")
     public ResponseEntity<ByteArrayResource> getReportByYear(@PathVariable int year, @PathVariable String sortDir) {
         PdfReportOptions options = new PdfReportOptions(
                 true, "Car List by Year", GroupByOption.YEAR,sortDir,1.07);
@@ -54,7 +57,7 @@ public class FsCarController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
-    @GetMapping("/make/{make}/{sortDir}")
+    @GetMapping("report/make/{make}/{sortDir}")
     public ResponseEntity<ByteArrayResource> getReportByYear(@PathVariable String make, @PathVariable String sortDir) {
         PdfReportOptions options = new PdfReportOptions(
                 true, "Car List by Year", GroupByOption.MAKE,sortDir,1.07);
@@ -76,25 +79,25 @@ public class FsCarController {
     }
 
     //grouping
-    @GetMapping("/group/{groupBy}/{sort}")
-    public ResponseEntity<ByteArrayResource> getCarReportGrouped(@PathVariable String groupBy, @PathVariable String sort) {
-        GroupByOption groupOption = GroupByOption.valueOf(groupBy.toUpperCase());
-        PdfReportOptions options = new PdfReportOptions(true, "Car Details", groupOption, sort, 1.07);
+    @PostMapping(value = "report/group", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<byte[]> GroupCSV(@ModelAttribute ReportOptions reportOptions) {
         try {
-            // The data source is selected by the service, abstracting this complexity from the controller
-
             List<Car> cars = carService.getAll();
-            byte[] data = carPDFCreator.createPdfToByteArray( cars, options);
-            ByteArrayResource resource = new ByteArrayResource(data);
-            // Building the response with the created PDF data
-            return ResponseEntity.ok()
-                    .contentType(MediaType.APPLICATION_PDF)
-                    .contentLength(data.length)
-                    .body(resource);
+            PdfReportOptions options = new PdfReportOptions(
+                    true,
+                    "Car List grouped by " + reportOptions.getGroupBy(),
+                    GroupByOption.valueOf(reportOptions.getGroupBy().toUpperCase()),
+                    reportOptions.getSort(),
+                    1.07
+            );
+            byte[] doc = carPDFCreator.createPdfToByteArray(cars, options);
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_PDF);
+            return new ResponseEntity<>(doc, headers, HttpStatus.OK);
         } catch (Exception e) {
-            // If any error occurs, print the stack trace and return a 500 status code
-            e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+            System.out.println(e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage().getBytes());
         }
     }
 

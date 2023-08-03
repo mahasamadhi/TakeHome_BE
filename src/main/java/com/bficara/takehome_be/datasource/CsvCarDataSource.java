@@ -16,7 +16,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-
+@Primary
 @Repository
 public class CsvCarDataSource implements ICarDataSource {
 
@@ -87,13 +87,19 @@ public class CsvCarDataSource implements ICarDataSource {
     @Override
     public Map<String, List<String>> getMakeOptions() {
         Map<String, List<String>> result = new HashMap<>();
-        List<String> distinctMakes = this.carList.stream()
-                .map(Car::getMake)
-                .distinct()
-                .collect(Collectors.toList());
+        try {
 
-        result.put("makeOptions", distinctMakes);
-        return  result;
+            List<String> distinctMakes = this.carList.stream()
+                    .map(Car::getMake)
+                    .distinct()
+                    .collect(Collectors.toList());
+
+            result.put("makeOptions", distinctMakes);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return result;
     }
 
     @Override
