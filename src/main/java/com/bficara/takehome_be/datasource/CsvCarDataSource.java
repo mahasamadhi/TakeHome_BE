@@ -12,10 +12,11 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
-@Primary
 @Repository
 public class CsvCarDataSource implements ICarDataSource {
 
@@ -81,6 +82,31 @@ public class CsvCarDataSource implements ICarDataSource {
         return carList.stream()
                 .filter(car -> car.getMsrp() < price)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public Map<String, List<String>> getMakeOptions() {
+        Map<String, List<String>> result = new HashMap<>();
+        List<String> distinctMakes = this.carList.stream()
+                .map(Car::getMake)
+                .distinct()
+                .collect(Collectors.toList());
+
+        result.put("makeOptions", distinctMakes);
+        return  result;
+    }
+
+    @Override
+    public Map<String, List<String>> getYearOptions() {
+        //get a distinct list of year options from the current car list
+        List<String> distinctYears = this.carList.stream()
+                .map(car -> String.valueOf(car.getYear()))
+                .distinct()
+                .collect(Collectors.toList());
+
+        Map<String, List<String>> result = new HashMap<>();
+        result.put("yearOptions", distinctYears);
+        return result;
     }
 
     @Override

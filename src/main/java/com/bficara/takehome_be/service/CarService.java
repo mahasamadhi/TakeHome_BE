@@ -2,14 +2,17 @@ package com.bficara.takehome_be.service;
 
 import com.bficara.takehome_be.datasource.ICarDataSource;
 import com.bficara.takehome_be.model.Car;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class CarService {
 
     private ICarDataSource dataSource;
 
+    @Autowired
     public CarService(ICarDataSource dataSource) {
         this.dataSource = dataSource;
     }
@@ -35,8 +38,7 @@ public class CarService {
     }
 
 
-
-
-
+    public Map<String, List<String>> getMakeOptions() {return dataSource.getMakeOptions();}
+    public Map<String, List<String>> getYearOptions() {return dataSource.getYearOptions();}
 }
 

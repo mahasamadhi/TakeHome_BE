@@ -1,6 +1,6 @@
 package com.bficara.takehome_be.service;
 
-import com.bficara.takehome_be.obsolete.FilesystemDataSource;
+import com.bficara.takehome_be.datasource.FilesystemDataSource;
 import com.bficara.takehome_be.datasource.CsvCarDataSource;
 import com.bficara.takehome_be.datasource.H2CarRepository;
 import com.bficara.takehome_be.datasource.ICarDataSource;
@@ -26,7 +26,7 @@ public class CarDatasourceService {
         switch(sourceType) {
             case "h2":
                 return h2CarRepository;
-            case "filesystem":
+            case "fs":
                 return filesystemDataSource;
             case "csv":
                 return csvCarDataSource;
