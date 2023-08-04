@@ -86,12 +86,10 @@ public class FsCarController {
     }
 
     //grouping
-    @Value("${output.path}")
-    private String outputPath;
-    @PostMapping(value = "report/group", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<Object> GroupFS(@ModelAttribute ReportOptions reportOptions) {
+
+    @PostMapping(value = "report/group/download", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<byte[]> downloadGroupFS(@ModelAttribute ReportOptions reportOptions) {
         try {
-            String outputType = reportOptions.getOutputType();
             List<Car> cars = carService.getAll();
             PdfReportOptions options = new PdfReportOptions(
                     true,
@@ -101,31 +99,48 @@ public class FsCarController {
                     1.07
             );
             HttpHeaders headers = new HttpHeaders();
-            if ("download".equals(outputType)) {
-                byte[] doc = carPDFCreator.createPdfToByteArray(cars, options);
-                headers.setContentType(MediaType.APPLICATION_PDF);
-                return new ResponseEntity<>(doc, headers, HttpStatus.OK);
-            } else if ("saveToFs".equals(outputType)) {
-                // generate unique filename based on current date-time
-                DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
-                LocalDateTime now = LocalDateTime.now();
-                String uniqueFilename = dtf.format(now) + "_CarReport.pdf";
-                outputPath = outputPath + uniqueFilename;
-                carPDFCreator.createPdfToServerFs(outputPath,cars,options);
-                headers.setContentType(MediaType.APPLICATION_JSON);
-                Map<String,String> res = new HashMap<>();
-                res.put("Success","true");
-                res.put("OutputPath",outputPath);
-
-                return new ResponseEntity<>(res, headers, HttpStatus.OK);
-            } else {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid output type.".getBytes());
-            }
+            byte[] doc = carPDFCreator.createPdfToByteArray(cars, options);
+            headers.setContentType(MediaType.APPLICATION_PDF);
+            return new ResponseEntity<>(doc, headers, HttpStatus.OK);
         } catch (Exception e) {
             System.out.println(e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage().getBytes());
         }
     }
+
+    //get environment variable as file output location
+    @Value("${output.path}")
+    private String outputPath;
+    @PostMapping(value = "report/group/saveToFs", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<Map<String,String>> saveToFsGroupFS(@ModelAttribute ReportOptions reportOptions) {
+        try {
+            List<Car> cars = carService.getAll();
+            PdfReportOptions options = new PdfReportOptions(
+                    true,
+                    "Car List grouped by " + reportOptions.getGroupBy(),
+                    GroupByOption.valueOf(reportOptions.getGroupBy().toUpperCase()),
+                    reportOptions.getSort(),
+                    1.07
+            );
+            HttpHeaders headers = new HttpHeaders();
+            // generate unique filename based on current date-time
+            DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
+            LocalDateTime now = LocalDateTime.now();
+            String uniqueFilename = dtf.format(now) + "_CarReport.pdf";
+            String finalPath = outputPath + uniqueFilename;
+            carPDFCreator.createPdfToServerFs(finalPath,cars,options);
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            Map<String,String> res = new HashMap<>();
+            res.put("Success","true");
+            res.put("OutputPath",finalPath);
+
+            return new ResponseEntity<>(res, headers, HttpStatus.OK);
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
 
 
     //get year and make options
