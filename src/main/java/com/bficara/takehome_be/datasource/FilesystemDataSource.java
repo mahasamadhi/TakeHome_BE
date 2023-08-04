@@ -1,8 +1,10 @@
 package com.bficara.takehome_be.datasource;
 
 import com.bficara.takehome_be.model.Car;
+import jakarta.annotation.PostConstruct;
 import org.apache.commons.csv.CSVRecord;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import com.bficara.takehome_be.tools.CSVReader;
 
@@ -14,12 +16,12 @@ import java.util.stream.Collectors;
 
 @Service
 public class FilesystemDataSource implements ICarDataSource {
-    //work laptop
-//    private final String filePath = "C:\\pProjects\\problem\\TakeHome_BE\\pdfInput\\data.csv";
-    private final String filePath = "../TakeHome_BE/pdfInput/data.csv";
 
-    @Autowired
-    public FilesystemDataSource() {
+    @Value("${csv.file.path}")
+    private String inputFilePath;
+
+    @PostConstruct
+    public void init() {
         this.processCSVData();
     }
 
@@ -78,7 +80,7 @@ public class FilesystemDataSource implements ICarDataSource {
     private void processCSVData() {
         List<CSVRecord> records;
         CSVReader csvReader = new CSVReader();
-        records = csvReader.read(this.filePath);
+        records = csvReader.read(inputFilePath);
         List<Car> cars = new ArrayList<>();
 
         for (CSVRecord record : records) {
