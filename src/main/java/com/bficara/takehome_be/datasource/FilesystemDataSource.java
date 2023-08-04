@@ -14,7 +14,9 @@ import java.util.stream.Collectors;
 
 @Service
 public class FilesystemDataSource implements ICarDataSource {
-    private final String filePath = "C:\\pProjects\\problem\\TakeHome_BE\\pdfInput\\data.csv";
+    //work laptop
+//    private final String filePath = "C:\\pProjects\\problem\\TakeHome_BE\\pdfInput\\data.csv";
+    private final String filePath = "../TakeHome_BE/pdfInput/data.csv";
 
     @Autowired
     public FilesystemDataSource() {

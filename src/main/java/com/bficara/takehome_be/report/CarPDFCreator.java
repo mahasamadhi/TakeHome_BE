@@ -77,6 +77,49 @@ public class CarPDFCreator {
         return byteArrayOutputStream.toByteArray();
     }
 
+    public void createPdfToServerFs(String dest, List<Car> cars, PdfReportOptions options) throws Exception {
+        GroupByOption groupBy = options.getGroupBy();
+
+        PdfWriter writer = new PdfWriter(dest);
+        PdfDocument pdf = new PdfDocument(writer);
+        Document document = new Document(pdf);
+
+        //create the main element of the PDF, the table
+        float[] pointColumnWidths = {100F, 100F, 100F, 100F, 100F};
+        Table table = new Table(pointColumnWidths);
+        int numColumns = pointColumnWidths.length;
+
+        //add title and date
+        pdfCreator.addTitle(document, options);
+        pdfCreator.addDate(document, options);
+
+        //add price (msrp + tax)
+        addPrice(cars, options.getTaxRate());
+
+
+        switch (groupBy) {
+            case YEAR, PRICE:
+                AddCarColumnNames(table, "Year");
+                pdfCreator.addEmptyRow(table, numColumns * 2);
+                Map<Integer, List<Car>> carMap = groupByYear(cars,options.getGroupSortDir());
+                fillPdfByYear(carMap, table, numColumns);
+                break;
+
+            case MAKE:
+                AddCarColumnNames(table, "Make");
+                pdfCreator.addEmptyRow(table, numColumns * 2);
+                Map<String, List<Car>> carMapMake = groupByMake(cars, options.getGroupSortDir());
+                fillPdfByMake(carMapMake, table, numColumns);
+                break;
+
+            default:
+                throw new IllegalArgumentException("Invalid groupBy value: " + groupBy);
+        }
+
+            document.add(table);
+            document.close();
+        }
+
     public void addPrice(List<Car> cars, double taxRate) {
         for (Car car : cars) {
             double price = taxRate * car.getMsrp();

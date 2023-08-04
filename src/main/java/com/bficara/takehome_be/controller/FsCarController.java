@@ -4,8 +4,10 @@ import com.bficara.takehome_be.datasource.CsvCarDataSource;
 import com.bficara.takehome_be.model.Car;
 import com.bficara.takehome_be.model.ReportOptions;
 import com.bficara.takehome_be.service.CarService;
+import com.fasterxml.jackson.databind.util.JSONPObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -15,6 +17,11 @@ import org.springframework.web.bind.annotation.*;
 import com.bficara.takehome_be.tools.GroupByOption;
 import com.bficara.takehome_be.report.CarPDFCreator;
 import com.bficara.takehome_be.tools.PdfReportOptions;
+
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -79,9 +86,12 @@ public class FsCarController {
     }
 
     //grouping
+    @Value("${output.path}")
+    private String outputPath;
     @PostMapping(value = "report/group", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<byte[]> GroupCSV(@ModelAttribute ReportOptions reportOptions) {
+    public ResponseEntity<Object> GroupFS(@ModelAttribute ReportOptions reportOptions) {
         try {
+            String outputType = reportOptions.getOutputType();
             List<Car> cars = carService.getAll();
             PdfReportOptions options = new PdfReportOptions(
                     true,
@@ -90,16 +100,33 @@ public class FsCarController {
                     reportOptions.getSort(),
                     1.07
             );
-            byte[] doc = carPDFCreator.createPdfToByteArray(cars, options);
-
             HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_PDF);
-            return new ResponseEntity<>(doc, headers, HttpStatus.OK);
+            if ("download".equals(outputType)) {
+                byte[] doc = carPDFCreator.createPdfToByteArray(cars, options);
+                headers.setContentType(MediaType.APPLICATION_PDF);
+                return new ResponseEntity<>(doc, headers, HttpStatus.OK);
+            } else if ("saveToFs".equals(outputType)) {
+                // generate unique filename based on current date-time
+                DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
+                LocalDateTime now = LocalDateTime.now();
+                String uniqueFilename = dtf.format(now) + "_CarReport.pdf";
+                outputPath = outputPath + uniqueFilename;
+                carPDFCreator.createPdfToServerFs(outputPath,cars,options);
+                headers.setContentType(MediaType.APPLICATION_JSON);
+                Map<String,String> res = new HashMap<>();
+                res.put("Success","true");
+                res.put("OutputPath",outputPath);
+
+                return new ResponseEntity<>(res, headers, HttpStatus.OK);
+            } else {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid output type.".getBytes());
+            }
         } catch (Exception e) {
             System.out.println(e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage().getBytes());
         }
     }
+
 
     //get year and make options
 
