@@ -12,4 +12,6 @@ public interface PDFCreator {
     void addCellToTable(Table table, String text, PdfFont font, int fontSize, CellTypeOption cellType) throws java.io.IOException;
 
     void addEmptyRow(Table table, int number);
+
+     void addLineSeperator(Document document, float marginTop, float marginBottom);
 }

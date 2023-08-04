@@ -52,7 +52,7 @@ public class H2CarController {
     @GetMapping("report/group/{groupBy}/{sort}")
     public ResponseEntity<ByteArrayResource> getH2CarReport(@PathVariable String groupBy, @PathVariable String sort) {
         GroupByOption groupOption = GroupByOption.valueOf(groupBy.toUpperCase());
-        PdfReportOptions options = new PdfReportOptions(true, "Car Details", groupOption, sort, 1.07);
+        PdfReportOptions options = new PdfReportOptions(true, "Car List by " + groupBy, groupOption, sort, 1.07);
         try {
             // The data source is selected by the service, abstracting this complexity from the controller
             List<Car> cars = carService.getAll();
@@ -94,7 +94,7 @@ public class H2CarController {
     @GetMapping("report/make/{make}/{sortDir}")
     public ResponseEntity<ByteArrayResource> getH2ReportByYear(@PathVariable String make, @PathVariable String sortDir) {
         PdfReportOptions options = new PdfReportOptions(
-                true, "Car List by Year", GroupByOption.MAKE,sortDir,1.07);
+                true, "Car List by Make", GroupByOption.MAKE,sortDir,1.07);
         try {
             // The data source is selected by the service, abstracting this complexity from the controller
             List<Car> cars = carService.getAllByMake(make);

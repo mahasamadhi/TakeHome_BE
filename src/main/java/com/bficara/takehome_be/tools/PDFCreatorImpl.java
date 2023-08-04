@@ -4,12 +4,10 @@ import com.itextpdf.io.font.constants.StandardFonts;
 import com.itextpdf.kernel.colors.ColorConstants;
 import com.itextpdf.kernel.font.PdfFont;
 import com.itextpdf.kernel.font.PdfFontFactory;
+import com.itextpdf.kernel.pdf.canvas.draw.SolidLine;
 import com.itextpdf.layout.Document;
 import com.itextpdf.layout.borders.Border;
-import com.itextpdf.layout.element.Cell;
-import com.itextpdf.layout.element.Paragraph;
-import com.itextpdf.layout.element.Table;
-import com.itextpdf.layout.element.Text;
+import com.itextpdf.layout.element.*;
 import com.itextpdf.layout.properties.TextAlignment;
 import org.springframework.stereotype.Service;
 
@@ -58,6 +56,15 @@ public class PDFCreatorImpl implements PDFCreator {
             cell.add(new Paragraph(" "));
             table.addCell(cell);
         }
+    }
+
+    @Override
+    public void addLineSeperator(Document document, float marginTop, float marginBottom) {
+        SolidLine line = new SolidLine(1f);
+        LineSeparator ls = new LineSeparator(line);
+        ls.setMarginTop(marginTop);  // this will add space above the line
+        ls.setMarginBottom(marginBottom);  // this will add space below the line
+        document.add(ls);
     }
 
 }

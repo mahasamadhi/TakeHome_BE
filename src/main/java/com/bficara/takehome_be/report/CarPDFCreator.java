@@ -2,20 +2,34 @@ package com.bficara.takehome_be.report;
 import com.bficara.takehome_be.model.Car;
 import com.bficara.takehome_be.tools.*;
 import com.itextpdf.io.font.constants.StandardFonts;
+import com.itextpdf.kernel.colors.ColorConstants;
 import com.itextpdf.kernel.font.PdfFont;
 import com.itextpdf.kernel.font.PdfFontFactory;
+import com.itextpdf.kernel.geom.Rectangle;
 import com.itextpdf.kernel.pdf.PdfDocument;
+import com.itextpdf.kernel.pdf.PdfPage;
 import com.itextpdf.kernel.pdf.PdfWriter;
+import com.itextpdf.kernel.pdf.canvas.PdfCanvas;
+import com.itextpdf.kernel.pdf.canvas.draw.SolidLine;
 import com.itextpdf.layout.Document;
 import com.itextpdf.layout.borders.Border;
 import com.itextpdf.layout.element.Cell;
+import com.itextpdf.layout.element.LineSeparator;
 import com.itextpdf.layout.element.Paragraph;
 import com.itextpdf.layout.element.Table;
+import com.itextpdf.layout.layout.LayoutArea;
+import com.itextpdf.layout.layout.LayoutResult;
+import com.itextpdf.layout.properties.TextAlignment;
+import com.itextpdf.layout.renderer.DocumentRenderer;
+import com.itextpdf.layout.renderer.DrawContext;
+import com.itextpdf.layout.renderer.ParagraphRenderer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -48,8 +62,12 @@ public class CarPDFCreator {
         pdfCreator.addTitle(document, options);
         pdfCreator.addDate(document, options);
 
+        pdfCreator.addLineSeperator(document,5, 15);
+
         //add price (msrp + tax)
         addPrice(cars, options.getTaxRate());
+
+
 
 
         switch (groupBy) {
@@ -71,10 +89,32 @@ public class CarPDFCreator {
                 throw new IllegalArgumentException("Invalid groupBy value: " + groupBy);
         }
 
+
+
         document.add(table);
+
+        pdfCreator.addLineSeperator(document,70, 5);
+
+        addDisclaimerFooter(document,3);
+
         document.close();
 
         return byteArrayOutputStream.toByteArray();
+    }
+
+
+
+    public void addDisclaimerFooter(Document document, int validForDays) throws IOException {
+        PdfFont font = PdfFontFactory.createFont(StandardFonts.COURIER);
+        LocalDate date = LocalDate.now().plusDays(validForDays);
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("MM/dd/yyyy");
+        String formatted = dtf.format(date);
+
+        document.add(new Paragraph("Disclaimer: Prices valid until " + formatted)
+                .setTextAlignment(TextAlignment.LEFT)
+                .setFont(font)
+                .setFontSize(12)
+                .setFontColor(ColorConstants.GRAY));
     }
 
     public void createPdfToServerFs(String dest, List<Car> cars, PdfReportOptions options) throws Exception {
