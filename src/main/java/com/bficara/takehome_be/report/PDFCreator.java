@@ -1,4 +1,4 @@
-package com.bficara.takehome_be.tools;
+package com.bficara.takehome_be.report;
 
 import com.itextpdf.io.exceptions.IOException;
 import com.itextpdf.kernel.font.PdfFont;

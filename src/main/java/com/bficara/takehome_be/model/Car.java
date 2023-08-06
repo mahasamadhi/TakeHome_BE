@@ -1,5 +1,6 @@
 package com.bficara.takehome_be.model;
 
+//The primary object of the app, the car
 public class Car {
 
     private int year;

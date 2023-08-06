@@ -1,10 +1,8 @@
 package com.bficara.takehome_be.controller;
 
-import com.bficara.takehome_be.datasource.CsvCarDataSource;
 import com.bficara.takehome_be.model.Car;
 import com.bficara.takehome_be.model.ReportOptions;
 import com.bficara.takehome_be.service.CarService;
-import com.fasterxml.jackson.databind.util.JSONPObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -14,13 +12,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import com.bficara.takehome_be.tools.GroupByOption;
+import com.bficara.takehome_be.report.GroupByOption;
 import com.bficara.takehome_be.report.CarPDFCreator;
-import com.bficara.takehome_be.tools.PdfReportOptions;
+import com.bficara.takehome_be.report.PdfReportOptions;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;

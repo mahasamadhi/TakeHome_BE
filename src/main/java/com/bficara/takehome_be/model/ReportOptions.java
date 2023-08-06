@@ -1,7 +1,9 @@
 package com.bficara.takehome_be.model;
 
 import org.springframework.web.multipart.MultipartFile;
-
+/*
+This class defines the options object required to use the CarPDFCreator
+ */
 public class ReportOptions {
     private MultipartFile file;
     private String groupBy;

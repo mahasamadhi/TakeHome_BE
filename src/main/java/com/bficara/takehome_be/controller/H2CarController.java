@@ -16,9 +16,9 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import com.bficara.takehome_be.tools.GroupByOption;
+import com.bficara.takehome_be.report.GroupByOption;
 import com.bficara.takehome_be.report.CarPDFCreator;
-import com.bficara.takehome_be.tools.PdfReportOptions;
+import com.bficara.takehome_be.report.PdfReportOptions;
 
 
 // This is the main controller class that handles car report-related requests
