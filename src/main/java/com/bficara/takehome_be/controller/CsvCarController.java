@@ -112,32 +112,37 @@ public class CsvCarController {
     }
        //get year and make options
 
-        @PostMapping(value = "/Car/makeOptions",  consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-        public Map<String, List<String>> getMakeOptions(@ModelAttribute CsvReportParams params) {
-            Map<String, List<String>> res = new HashMap<>();
+    @PostMapping(value = "/Car/makeOptions", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<Map<String, List<String>>> getMakeOptions(@ModelAttribute CsvReportParams params) {
+        Map<String, List<String>> res = new HashMap<>();
         try {
-
             CsvCarDataSource dataSource = (CsvCarDataSource) carService.getDataSource();
             dataSource.setFile(params.getFile());
             dataSource.processData();
             res = carService.getMakeOptions();
+            return ResponseEntity.ok(res);  // OK status
         } catch (Exception e) {
             e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build(); // Internal Server Error status
         }
-        return res;
-        }
+    }
 
-        @PostMapping(value = "/Car/yearOptions", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-        public Map<String, List<String>> getYearOptions(@ModelAttribute CsvReportParams params) {
 
+    @PostMapping(value = "/Car/yearOptions", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<Map<String, List<String>>> getYearOptions(@ModelAttribute CsvReportParams params) {
+        try {
             Map<String, List<String>> res = new HashMap<>();
-
             CsvCarDataSource dataSource = (CsvCarDataSource) carService.getDataSource();
             dataSource.setFile(params.getFile());
             dataSource.processData();
             res = carService.getYearOptions();
-            return res;
+            return ResponseEntity.ok(res);  // OK status
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build(); // Internal Server Error status
         }
+    }
+
 
 
         /*
