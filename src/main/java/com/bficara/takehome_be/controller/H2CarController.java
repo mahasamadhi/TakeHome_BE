@@ -54,7 +54,6 @@ public class H2CarController {
         GroupByOption groupOption = GroupByOption.valueOf(groupBy.toUpperCase());
         PdfReportOptions options = new PdfReportOptions(true, "Car List by " + groupBy, groupOption, sort, 1.07);
         try {
-            // The data source is selected by the service, abstracting this complexity from the controller
             List<Car> cars = carService.getAll();
             byte[] data = carPDFCreator.createPdfToByteArray( cars, options);
             ByteArrayResource resource = new ByteArrayResource(data);
@@ -76,7 +75,6 @@ public class H2CarController {
         PdfReportOptions options = new PdfReportOptions(
                 true, "Car List by Year", GroupByOption.YEAR,sortDir,1.07);
         try {
-            // The data source is selected by the service, abstracting this complexity from the controller
             List<Car> cars = carService.getAllByYear(year);
             byte[] data = carPDFCreator.createPdfToByteArray( cars, options);
             ByteArrayResource resource = new ByteArrayResource(data);
@@ -96,7 +94,6 @@ public class H2CarController {
         PdfReportOptions options = new PdfReportOptions(
                 true, "Car List by Make", GroupByOption.MAKE,sortDir,1.07);
         try {
-            // The data source is selected by the service, abstracting this complexity from the controller
             List<Car> cars = carService.getAllByMake(make);
             byte[] data = carPDFCreator.createPdfToByteArray( cars, options);
             ByteArrayResource resource = new ByteArrayResource(data);
